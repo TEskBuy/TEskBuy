@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loja — TeskBuy</title>
+<meta name="description" content="Todo o catálogo TeskBuy: telemóveis, computadores, impressoras, livros, eletrodomésticos e acessórios.">
+<link rel="icon" type="image/png" href="/assets/img/favicon.png">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/teskbuy.css">
+<style>
+  .loja-grelha{ display:grid; grid-template-columns: 250px 1fr; gap:32px; align-items:start; padding-top:32px; }
+  .filtros{ position:sticky; top: calc(var(--cabecalho-altura) + 20px); }
+  .filtro-bloco{ padding-bottom:20px; margin-bottom:20px; border-bottom:1px solid var(--linha); }
+  .filtro-bloco:last-child{ border-bottom:none; }
+  .filtro-bloco h4{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.16em;
+    text-transform:uppercase; color: var(--ink-dim); margin-bottom:12px; font-weight:500;
+  }
+  .filtro-lista{ display:flex; flex-direction:column; gap:2px; }
+  .filtro-lista button{
+    text-align:left; background:none; border:none; cursor:pointer;
+    color: var(--ink-dim); font-family:inherit; font-size:14px;
+    padding:7px 10px; border-radius: var(--raio-s); display:flex; justify-content:space-between; gap:8px;
+  }
+  .filtro-lista button:hover{ background: rgba(238,247,248,0.06); color: var(--ink); }
+  .filtro-lista button.activo{ background: rgba(242,102,13,0.14); color: var(--orange-soft); }
+  .filtro-lista button span{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; opacity:.7; }
+  .preco-linha{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .preco-linha input{
+    width:100%; padding:9px 11px; border-radius: var(--raio-s);
+    background: rgba(238,247,248,0.04); border:1px solid var(--linha);
+    color: var(--ink); font-family:'IBM Plex Mono',monospace; font-size:13px;
+  }
+  .preco-linha input:focus{ outline:none; border-color: var(--orange); }
+
+  .barra{ display:flex; justify-content:space-between; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:20px; }
+  .barra select{
+    padding:9px 34px 9px 14px; border-radius:999px; font-size:13.5px;
+    background: rgba(238,247,248,0.05); border:1px solid var(--linha); color: var(--ink);
+    font-family:inherit; appearance:none;
+    background-image:linear-gradient(45deg,transparent 50%,var(--ink-dim) 50%),linear-gradient(135deg,var(--ink-dim) 50%,transparent 50%);
+    background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%; background-size:5px 5px; background-repeat:no-repeat;
+  }
+  .barra select option{ background: var(--teal-deep); }
+
+  .paginacao{ display:flex; gap:8px; justify-content:center; align-items:center; margin-top:36px; flex-wrap:wrap; }
+  .paginacao button{
+    min-width:38px; height:38px; padding:0 12px; border-radius: var(--raio-s);
+    border:1px solid var(--linha); background:transparent; color: var(--ink-dim);
+    font-family:'IBM Plex Mono',monospace; font-size:13px; cursor:pointer;
+  }
+  .paginacao button:hover:not(:disabled){ border-color: var(--linha-forte); color: var(--ink); }
+  .paginacao button.activo{ background: var(--orange); border-color: var(--orange); color:#fff; }
+  .paginacao button:disabled{ opacity:.35; cursor:not-allowed; }
+
+  .btn-filtros{ display:none; }
+  @media (max-width: 860px){
+    .loja-grelha{ grid-template-columns:1fr; gap:20px; }
+    .filtros{ position:static; display:none; }
+    .filtros.aberta{ display:block; background: var(--surface); border:1px solid var(--linha); border-radius: var(--raio); padding:20px; }
+    .btn-filtros{ display:inline-flex; }
+  }
+</style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<div class="route-lines"></div>
+
+<header id="cabecalho"></header>
+
+<main class="env">
+  <div class="loja-grelha">
+    <aside class="filtros" id="filtros">
+      <div class="filtro-bloco">
+        <h4>Categorias</h4>
+        <div class="filtro-lista" id="lista-categorias"></div>
+      </div>
+      <div class="filtro-bloco">
+        <h4>Estado</h4>
+        <div class="filtro-lista" id="lista-condicao">
+          <button data-condicao="">Todos</button>
+          <button data-condicao="novo">Novo</button>
+          <button data-condicao="usado">Usado</button>
+          <button data-condicao="recondicionado">Recondicionado</button>
+        </div>
+      </div>
+      <div class="filtro-bloco">
+        <h4>Preço (Kz)</h4>
+        <div class="preco-linha">
+          <input type="number" id="preco-min" placeholder="Mínimo" min="0">
+          <input type="number" id="preco-max" placeholder="Máximo" min="0">
+        </div>
+        <button class="btn btn-secundario btn-pequeno" id="aplicar-preco" style="margin-top:10px;width:100%">Aplicar</button>
+      </div>
+      <div class="filtro-bloco">
+        <h4>Disponibilidade</h4>
+        <div class="filtro-lista">
+          <button data-stock="true">Só com stock</button>
+          <button data-stock="">Mostrar tudo</button>
+        </div>
+      </div>
+      <button class="btn btn-fantasma btn-pequeno" id="limpar-filtros">Limpar filtros</button>
+    </aside>
+
+    <section>
+      <div class="barra">
+        <div>
+          <h1 id="titulo" style="font-size:26px">Loja</h1>
+          <p class="silenciado pequeno" id="contagem">A carregar…</p>
+        </div>
+        <div class="linha-flex">
+          <button class="btn btn-secundario btn-pequeno btn-filtros" id="btn-filtros">Filtros</button>
+          <select id="ordenar" aria-label="Ordenar produtos">
+            <option value="recentes">Mais recentes</option>
+            <option value="populares">Mais vendidos</option>
+            <option value="preco_asc">Preço: menor primeiro</option>
+            <option value="preco_desc">Preço: maior primeiro</option>
+            <option value="nome">Nome (A–Z)</option>
+            <option value="avaliacao">Melhor avaliados</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grelha grelha-produtos" id="resultados"></div>
+      <div class="paginacao" id="paginacao"></div>
+    </section>
+  </div>
+</main>
+
+<footer id="rodape"></footer>
+
+<script src="/assets/js/api.js"></script>
+<script src="/assets/js/estado.js"></script>
+<script src="/assets/js/ui.js"></script>
+<script src="/assets/js/pagina-loja.js"></script>
+</body>
+</html>

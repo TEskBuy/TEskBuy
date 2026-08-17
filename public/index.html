@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TeskBuy — A loja online de Angola</title>
+<meta name="description" content="TeskBuy: telemóveis, computadores, impressoras, livros e eletrodomésticos — novos e usados, com entrega em Luanda e em todo o país.">
+<link rel="icon" type="image/png" href="/assets/img/favicon.png">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/teskbuy.css">
+<style>
+  .hero{ padding: 54px 0 40px; }
+  .hero-grelha{ display:grid; grid-template-columns: 1.15fr 0.85fr; gap:44px; align-items:center; }
+  .hero h1{ margin:18px 0 16px; }
+  .hero p.intro{ color: var(--ink-dim); font-size:17px; max-width:520px; margin-bottom:26px; }
+  .hero-accoes{ display:flex; gap:12px; flex-wrap:wrap; }
+
+  .slider{ position:relative; min-height:190px; }
+  .slide{
+    position:absolute; inset:0; opacity:0; transform: translateY(12px);
+    transition: opacity .6s ease, transform .6s ease; pointer-events:none;
+    display:flex; flex-direction:column; justify-content:center;
+  }
+  .slide.activo{ opacity:1; transform:none; pointer-events:auto; }
+  .slide h2{ font-size: clamp(20px,2.6vw,27px); margin-bottom:12px; }
+  .slide p{ color: var(--ink-dim); }
+  .painel-slider{
+    background: var(--surface); border:1px solid var(--linha); border-radius: var(--raio-l);
+    padding:28px; box-shadow: var(--sombra);
+  }
+  .pontos{ display:flex; gap:8px; margin-top:20px; }
+  .pontos button{
+    width:8px; height:8px; border-radius:50%; border:none; padding:0; cursor:pointer;
+    background: rgba(238,247,248,0.25); transition: background .3s, width .3s;
+  }
+  .pontos button.activo{ background: var(--orange); width:24px; border-radius:5px; }
+
+  .confianca{ display:grid; grid-template-columns: repeat(auto-fit, minmax(210px,1fr)); gap:16px; padding:22px 0 4px; }
+  .confianca div{ display:flex; gap:12px; align-items:flex-start; }
+  .confianca svg{ width:22px; height:22px; color: var(--orange); flex-shrink:0; margin-top:2px; }
+  .confianca strong{ display:block; font-size:14.5px; font-family:'Space Grotesk',sans-serif; }
+  .confianca span{ font-size:13px; color: var(--ink-dim); }
+
+  .categorias{ display:grid; grid-template-columns: repeat(auto-fit, minmax(168px,1fr)); gap:14px; }
+  .categoria{
+    display:block; text-decoration:none; padding:22px 20px; border-radius: var(--raio);
+    border:1px solid var(--linha); background: var(--surface);
+    transition: border-color .2s, transform .2s;
+  }
+  .categoria:hover{ border-color: var(--orange); transform: translateY(-2px); }
+  .categoria strong{ display:block; font-family:'Space Grotesk',sans-serif; font-size:16px; margin-bottom:4px; }
+  .categoria span{ font-family:'IBM Plex Mono',monospace; font-size:11.5px; color: var(--ink-dim); letter-spacing:0.08em; }
+
+  .faixa-parceiros{
+    border-top:1px solid var(--linha); border-bottom:1px solid var(--linha);
+    padding:22px 0; display:flex; align-items:center; gap:22px; flex-wrap:wrap; justify-content:center;
+  }
+  .faixa-parceiros span{
+    font-family:'IBM Plex Mono',monospace; font-size:12.5px; letter-spacing:0.06em;
+    padding:7px 16px; border:1px solid var(--linha); border-radius:999px; background: rgba(238,247,248,0.04);
+  }
+
+  .newsletter{
+    background: linear-gradient(135deg, rgba(18,131,158,0.18), rgba(242,102,13,0.12));
+    border:1px solid var(--linha); border-radius: var(--raio-l); padding:34px;
+    display:flex; gap:26px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+  }
+  .newsletter form{ display:flex; gap:10px; flex-wrap:wrap; }
+  .newsletter input{
+    padding:12px 16px; border-radius:999px; border:1px solid var(--linha-forte);
+    background: rgba(6,48,60,0.5); color: var(--ink); font-family:inherit; min-width:250px;
+  }
+  .newsletter input:focus{ outline:none; border-color: var(--orange); }
+
+  @media (max-width: 880px){
+    .hero-grelha{ grid-template-columns:1fr; gap:30px; }
+    .slider{ min-height:210px; }
+  }
+</style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<div class="route-lines"></div>
+
+<header id="cabecalho"></header>
+
+<main>
+  <section class="hero env">
+    <div class="hero-grelha">
+      <div>
+        <p class="eyebrow">Loja aberta · Entregamos em Angola</p>
+        <h1>Tecnologia e livros<br>com <span class="accent">qualidade garantida</span></h1>
+        <p class="intro">Telemóveis, computadores, impressoras, livros e eletrodomésticos — novos e usados, verificados um a um antes de sairem do nosso armazém.</p>
+        <div class="hero-accoes">
+          <a class="btn btn-principal" href="/loja">Ver a loja</a>
+          <a class="btn btn-secundario" href="/loja?condicao=usado">Usados verificados</a>
+        </div>
+      </div>
+
+      <div class="painel-slider">
+        <div class="slider" id="slider">
+          <article class="slide activo">
+            <h2>Tudo o que precisa, <span class="accent">num só lugar</span></h2>
+            <p>Uma loja angolana dedicada a eletrodomésticos, telemóveis, computadores, livros e impressoras — novos e usados, sempre em bom estado.</p>
+          </article>
+          <article class="slide">
+            <h2>Parcerias que fazem a <span class="accent">diferença</span></h2>
+            <p>Trabalhamos com redes internacionais de confiança, como a Xianyu e a YITOO, para trazer as melhores ofertas até Angola.</p>
+          </article>
+          <article class="slide">
+            <h2>Paga como <span class="accent">preferir</span></h2>
+            <p>Multicaixa Express, transferência bancária ou numerário na entrega. Escolhe no checkout, sem complicações.</p>
+          </article>
+          <article class="slide">
+            <h2>Fale <span class="accent">connosco</span></h2>
+            <p>Estamos a um telefonema de distância.</p>
+            <div class="linha-flex mono" style="margin-top:12px;font-size:14px;color:var(--sand)">
+              <a href="tel:+244943277184" style="text-decoration:none;border-bottom:1px solid rgba(245,234,217,.35)">+244 943 277 184</a>
+              <a href="mailto:info@teskbuy.com" style="text-decoration:none;border-bottom:1px solid rgba(245,234,217,.35)">info@teskbuy.com</a>
+            </div>
+          </article>
+        </div>
+        <div class="pontos" id="pontos"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="env">
+    <div class="confianca" id="confianca"></div>
+  </section>
+
+  <section class="seccao env">
+    <div class="seccao-cabecalho">
+      <div>
+        <p class="eyebrow">Categorias</p>
+        <h2 style="margin-top:10px">Comece por aqui</h2>
+      </div>
+      <a class="btn btn-fantasma" href="/loja">Ver tudo</a>
+    </div>
+    <div class="categorias" id="categorias"></div>
+  </section>
+
+  <section class="seccao env" style="padding-top:0">
+    <div class="seccao-cabecalho">
+      <div>
+        <p class="eyebrow">Em destaque</p>
+        <h2 style="margin-top:10px">Escolhas da equipa</h2>
+      </div>
+      <a class="btn btn-fantasma" href="/loja?ordenar=populares">Ver mais</a>
+    </div>
+    <div class="grelha grelha-produtos" id="destaques"></div>
+  </section>
+
+  <section class="env">
+    <div class="faixa-parceiros">
+      <p class="eyebrow" style="margin-right:8px">Redes parceiras</p>
+      <span>Xianyu</span><span>YITOO</span><span>+ outras redes parceiras</span>
+    </div>
+  </section>
+
+  <section class="seccao env">
+    <div class="seccao-cabecalho">
+      <div>
+        <p class="eyebrow">Chegou agora</p>
+        <h2 style="margin-top:10px">Novidades no armazém</h2>
+      </div>
+      <a class="btn btn-fantasma" href="/loja?ordenar=recentes">Ver tudo</a>
+    </div>
+    <div class="grelha grelha-produtos" id="novidades"></div>
+  </section>
+
+  <section class="env" style="padding-bottom:56px">
+    <div class="newsletter">
+      <div>
+        <h3 style="margin-bottom:6px">Novidades e descontos, sem spam</h3>
+        <p class="silenciado pequeno">Avisamos quando chegam produtos novos e quando há campanhas.</p>
+      </div>
+      <form id="form-newsletter">
+        <input type="email" name="email" placeholder="o.seu.email@exemplo.ao" required aria-label="E-mail">
+        <button class="btn btn-principal" type="submit">Subscrever</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer id="rodape"></footer>
+
+<script src="/assets/js/api.js"></script>
+<script src="/assets/js/estado.js"></script>
+<script src="/assets/js/ui.js"></script>
+<script src="/assets/js/pagina-inicio.js"></script>
+</body>
+</html>
