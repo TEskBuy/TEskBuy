@@ -321,7 +321,7 @@
             PAGAMENTOS.map(function (p) {
               return '<img src="/assets/img/pagamentos/' + p.ficheiro + '" alt="' + escapar(p.nome) + '" ' +
                 'title="' + escapar(p.nome) + '" loading="lazy" ' +
-                'style="height:30px;width:auto;display:block;border-radius:5px">';
+                'style="height:26px;width:auto;display:block">';
             }).join('') +
           '</div>' +
           '<p style="margin-top:20px">Copyright ' + new Date().getFullYear() +
