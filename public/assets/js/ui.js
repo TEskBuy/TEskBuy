@@ -186,10 +186,93 @@
     }
   }
 
+  /* ── conteúdo editável pelo painel ──────────────────────────
+     Fica guardado na chave "conteudo_site" das definições. Se ainda
+     não existir, ou se a leitura falhar, valem estes valores — o site
+     nunca fica em branco por causa disto. */
+  var CONTEUDO_PADRAO = {
+    inicio: {
+      eyebrow: 'Loja aberta · Entregamos em Angola',
+      titulo: 'Tecnologia e livros',
+      titulo_destaque: 'com qualidade garantida',
+      intro: 'Telemóveis, computadores, impressoras, livros e eletrodomésticos — novos e usados, verificados um a um antes de saírem do nosso armazém.',
+      botao1: 'Ver a loja',
+      botao2: 'Usados verificados',
+      slides: [
+        { titulo: 'Tudo o que precisa,', destaque: 'num só lugar',
+          texto: 'Uma loja angolana dedicada a eletrodomésticos, telemóveis, computadores, livros e impressoras — novos e usados, sempre em bom estado.' },
+        { titulo: 'Parcerias que fazem a', destaque: 'diferença',
+          texto: 'Trabalhamos com redes internacionais de confiança, como a Xianyu e a YITOO, para trazer as melhores ofertas até Angola.' },
+        { titulo: 'Paga como', destaque: 'preferir',
+          texto: 'Multicaixa Express, transferência bancária ou numerário na entrega. Escolhe no checkout, sem complicações.' },
+        { titulo: 'Fale', destaque: 'connosco',
+          texto: 'Estamos a um telefonema de distância.', mostrar_contactos: true },
+      ],
+      confianca: [
+        { titulo: 'Qualidade verificada', texto: 'Cada artigo é testado antes de sair do armazém.' },
+        { titulo: 'Entrega em Angola', texto: '24 a 48 horas em Luanda, 3 a 7 dias nas províncias.' },
+        { titulo: 'Pague à sua maneira', texto: 'Multicaixa Express, transferência ou numerário.' },
+        { titulo: 'Novos e usados', texto: 'Usados com estado descrito com honestidade.' },
+      ],
+      parceiros_titulo: 'Redes parceiras',
+      parceiros: ['Xianyu', 'YITOO', '+ outras redes parceiras'],
+      newsletter_titulo: 'Novidades e descontos, sem spam',
+      newsletter_texto: 'Avisamos quando chegam produtos novos e quando há campanhas.',
+    },
+    rodape: {
+      descricao: 'A loja online angolana de eletrodomésticos, telemóveis, computadores, livros e impressoras — novos e usados, sempre em bom estado.',
+      telefone: '+244 943 277 184',
+      email: 'info@teskbuy.com',
+      local: 'Luanda, Angola',
+      facebook: 'https://web.facebook.com/teskbuygroup',
+      whatsapp: 'https://wa.me/244943277184',
+    },
+  };
+
+  var conteudoCache = null;
+  var conteudoPedido = null;
+
+  /** Junta o que está gravado por cima dos valores por omissão. */
+  function juntar(padrao, gravado) {
+    var saida = {};
+    Object.keys(padrao).forEach(function (seccao) {
+      saida[seccao] = {};
+      Object.keys(padrao[seccao]).forEach(function (campo) {
+        var v = gravado && gravado[seccao] ? gravado[seccao][campo] : undefined;
+        var vazio = v === undefined || v === null || v === '' ||
+                    (Array.isArray(v) && v.length === 0);
+        saida[seccao][campo] = vazio ? padrao[seccao][campo] : v;
+      });
+    });
+    return saida;
+  }
+
+  /** Lê o conteúdo do site uma única vez, mesmo com vários pedidos em simultâneo. */
+  function conteudo(callback) {
+    if (conteudoCache) { callback(conteudoCache); return; }
+
+    if (!conteudoPedido) {
+      conteudoPedido = api.get('/catalogo/definicoes')
+        .then(function (r) {
+          conteudoCache = juntar(CONTEUDO_PADRAO, (r.dados || {}).conteudo_site);
+          return conteudoCache;
+        })
+        .catch(function () {
+          conteudoCache = juntar(CONTEUDO_PADRAO, null);
+          return conteudoCache;
+        });
+    }
+
+    conteudoPedido.then(callback);
+  }
+
   /* ── rodapé ─────────────────────────────────────────────── */
-  function rodape() {
+  function rodape(c) {
     var alvo = document.getElementById('rodape');
     if (!alvo) return;
+
+    var r = (c && c.rodape) || CONTEUDO_PADRAO.rodape;
+    var telefoneLimpo = String(r.telefone || '').replace(/[^0-9+]/g, '');
 
     alvo.className = 'rodape';
     alvo.innerHTML =
@@ -197,10 +280,10 @@
         '<div class="rodape-grelha">' +
           '<div>' +
             '<a class="logo" href="/" style="margin-bottom:14px"><img src="/assets/img/logo-full.png" alt="TeskBuy"></a>' +
-            '<p class="silenciado pequeno" style="max-width:300px">A loja online angolana de eletrodomésticos, telemóveis, computadores, livros e impressoras — novos e usados, sempre em bom estado.</p>' +
+            '<p class="silenciado pequeno" style="max-width:300px">' + escapar(r.descricao) + '</p>' +
             '<div class="linha-flex" style="margin-top:16px">' +
-              '<a class="pilula" href="https://web.facebook.com/teskbuygroup" target="_blank" rel="noopener">Facebook</a>' +
-              '<a class="pilula" href="https://wa.me/244943277184" target="_blank" rel="noopener">WhatsApp</a>' +
+              '<a class="pilula" href="' + escapar(r.facebook) + '" target="_blank" rel="noopener">Facebook</a>' +
+              '<a class="pilula" href="' + escapar(r.whatsapp) + '" target="_blank" rel="noopener">WhatsApp</a>' +
             '</div>' +
           '</div>' +
           '<div><h4>Comprar</h4><ul>' +
@@ -218,10 +301,9 @@
             '<li><a href="/carrinho">Carrinho</a></li>' +
           '</ul></div>' +
           '<div><h4>Contactos</h4><ul>' +
-            '<li><a href="tel:+244943277184">+244 943 277 184</a></li>' +
-            '<li><a href="mailto:info@teskbuy.com">info@teskbuy.com</a></li>' +
-            '<li><span class="silenciado">Luanda, Angola</span></li>' +
-            '<li><a href="/brevemente">Página de lançamento</a></li>' +
+            '<li><a href="tel:' + escapar(telefoneLimpo) + '">' + escapar(r.telefone) + '</a></li>' +
+            '<li><a href="mailto:' + escapar(r.email) + '">' + escapar(r.email) + '</a></li>' +
+            '<li><span class="silenciado">' + escapar(r.local) + '</span></li>' +
           '</ul></div>' +
         '</div>' +
         '<div class="rodape-base">' +
@@ -409,12 +491,15 @@
     rodape();
     estado.aoMudar(actualizarCrachas);
     refrescarSessao();
+    // volta a desenhar o rodapé com os textos gravados no painel
+    conteudo(function (c) { rodape(c); });
   }
 
   global.TBUI = {
     ico: ico, kz: kz, data: data, escapar: escapar, imagem: imagem,
     NOMES_ESTADO: NOMES_ESTADO, NOMES_PAGAMENTO: NOMES_PAGAMENTO, NOMES_CONDICAO: NOMES_CONDICAO,
     notificar: notificar, cabecalho: cabecalho, rodape: rodape, iniciar: iniciar,
+    conteudo: conteudo, CONTEUDO_PADRAO: CONTEUDO_PADRAO,
     cartaoProduto: cartaoProduto, ligarAccoesProduto: ligarAccoesProduto,
     alternarFavorito: alternarFavorito, adicionarAoCarrinho: adicionarAoCarrinho,
     actualizarCrachas: actualizarCrachas, esqueletos: esqueletos,
