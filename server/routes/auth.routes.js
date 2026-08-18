@@ -8,6 +8,8 @@ const e = require('../utils/esquemas');
 
 router.post('/registar', limiteAutenticacao, validar({ body: e.registo }), c.registar);
 router.post('/entrar', limiteAutenticacao, validar({ body: e.login }), c.entrar);
+router.post('/confirmar', limiteAutenticacao, validar({ body: e.confirmacaoCodigo }), c.confirmar);
+router.post('/reenviar-codigo', limiteAutenticacao, validar({ body: e.reenvioCodigo }), c.reenviar);
 router.post('/sair', c.sair);
 router.post('/renovar', c.renovar);
 router.get('/eu', exigirSessao, c.eu);
