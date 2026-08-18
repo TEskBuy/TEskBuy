@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TeskBuy — Loja Online</title>
+<title>TeskBuy — A loja online de Angola</title>
 <meta name="description" content="TeskBuy: telemóveis, computadores, impressoras, livros e eletrodomésticos — novos e usados, com entrega em Luanda e em todo o país.">
 <link rel="icon" type="image/png" href="/assets/img/favicon.png">
 <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
@@ -91,12 +91,12 @@
   <section class="hero env">
     <div class="hero-grelha">
       <div>
-        <p class="eyebrow">Loja aberta · Entregamos em Angola</p>
-        <h1>Tecnologia<br>com <span class="accent">qualidade garantida</span></h1>
-        <p class="intro">Telemóveis, computadores, impressoras e eletrodomésticos — novos e usados, verificados um a um antes de sairem do nosso armazém.</p>
+        <p class="eyebrow" id="c-eyebrow">Loja aberta · Entregamos em Angola</p>
+        <h1 id="c-titulo">Tecnologia e livros<br>com <span class="accent">qualidade garantida</span></h1>
+        <p class="intro" id="c-intro">Telemóveis, computadores, impressoras, livros e eletrodomésticos — novos e usados, verificados um a um antes de sairem do nosso armazém.</p>
         <div class="hero-accoes">
-          <a class="btn btn-principal" href="/loja">Ver a loja</a>
-          <a class="btn btn-secundario" href="/loja?condicao=usado">Usados verificados</a>
+          <a class="btn btn-principal" href="/loja" id="c-botao1">Ver a loja</a>
+          <a class="btn btn-secundario" href="/loja?condicao=usado" id="c-botao2">Usados verificados</a>
         </div>
       </div>
 
@@ -104,7 +104,7 @@
         <div class="slider" id="slider">
           <article class="slide activo">
             <h2>Tudo o que precisa, <span class="accent">num só lugar</span></h2>
-            <p>Uma loja angolana dedicada a eletrodomésticos, telemóveis, computadores e impressoras — novos e usados, sempre em bom estado.</p>
+            <p>Uma loja angolana dedicada a eletrodomésticos, telemóveis, computadores, livros e impressoras — novos e usados, sempre em bom estado.</p>
           </article>
           <article class="slide">
             <h2>Parcerias que fazem a <span class="accent">diferença</span></h2>
@@ -155,8 +155,8 @@
   </section>
 
   <section class="env">
-    <div class="faixa-parceiros">
-      <p class="eyebrow" style="margin-right:8px">Redes parceiras</p>
+    <div class="faixa-parceiros" id="c-faixa-parceiros">
+      <p class="eyebrow" style="margin-right:8px" id="c-parceiros-titulo">Redes parceiras</p>
       <span>Xianyu</span><span>YITOO</span><span>+ outras redes parceiras</span>
     </div>
   </section>
@@ -165,7 +165,7 @@
     <div class="seccao-cabecalho">
       <div>
         <p class="eyebrow">Chegou agora</p>
-        <h2 style="margin-top:10px">Novidades</h2>
+        <h2 style="margin-top:10px">Novidades no armazém</h2>
       </div>
       <a class="btn btn-fantasma" href="/loja?ordenar=recentes">Ver tudo</a>
     </div>
@@ -175,8 +175,8 @@
   <section class="env" style="padding-bottom:56px">
     <div class="newsletter">
       <div>
-        <h3 style="margin-bottom:6px">Novidades e descontos, sem spam</h3>
-        <p class="silenciado pequeno">Avisamos quando chegam produtos novos e quando há campanhas.</p>
+        <h3 style="margin-bottom:6px" id="c-news-titulo">Novidades e descontos, sem spam</h3>
+        <p class="silenciado pequeno" id="c-news-texto">Avisamos quando chegam produtos novos e quando há campanhas.</p>
       </div>
       <form id="form-newsletter">
         <input type="email" name="email" placeholder="o.seu.email@exemplo.ao" required aria-label="E-mail">
