@@ -27,6 +27,15 @@ const recuperacao = z.object({
   email: z.string().trim().toLowerCase().email('Indique um e-mail válido.'),
 });
 
+const confirmacaoCodigo = z.object({
+  email: z.string().trim().toLowerCase().email('Indique um e-mail válido.'),
+  codigo: z.string().trim().regex(/^\d{6}$/, 'O código tem de ter 6 dígitos.'),
+});
+
+const reenvioCodigo = z.object({
+  email: z.string().trim().toLowerCase().email('Indique um e-mail válido.'),
+});
+
 const novaPalavraPasse = z.object({
   palavra_passe: z.string().min(8, 'A palavra-passe deve ter pelo menos 8 caracteres.').max(72),
 });
@@ -188,6 +197,7 @@ const paramsProdutoId = z.object({ produtoId: uuid });
 
 module.exports = {
   registo, login, recuperacao, novaPalavraPasse, alteracaoPalavraPasse,
+  confirmacaoCodigo, reenvioCodigo,
   listagemProdutos, criarProduto, actualizarProduto, categoria, avaliacao,
   adicionarAoCarrinho, actualizarItemCarrinho, sincronizarCarrinho,
   criarEncomenda, estadoEncomenda, perfil, morada,
