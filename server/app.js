@@ -38,17 +38,31 @@ app.use(
 );
 
 const origensPermitidas = env.cors.length ? env.cors : [env.siteUrl];
+
+/**
+ * O site e a API vivem no mesmo domínio, seja ele o teskbuy.com, um
+ * endereço .vercel.app ou qualquer domínio que venha a ser ligado no
+ * futuro. Por isso a origem do próprio pedido é sempre aceite — é o
+ * único modo de isto não voltar a partir de cada vez que o domínio muda.
+ */
 app.use(
-  cors({
-    origin(origem, callback) {
-      if (!origem) return callback(null, true); // pedidos same-origin ou ferramentas
-      if (!env.producao) return callback(null, true);
-      if (origensPermitidas.some((o) => origem === o || origem.endsWith('.vercel.app'))) {
-        return callback(null, true);
-      }
-      return callback(new Error('Origem não autorizada pelo CORS.'));
-    },
-    credentials: true,
+  cors(function (req, callback) {
+    const permitir = { origin: true, credentials: true };
+    const origem = req.headers.origin;
+
+    // Sem cabeçalho Origin: pedido do próprio site (GET) ou ferramenta.
+    if (!origem) return callback(null, permitir);
+    if (!env.producao) return callback(null, permitir);
+
+    const anfitriao = req.headers['x-forwarded-host'] || req.headers.host;
+    const mesmoSitio = Boolean(anfitriao) &&
+      (origem === 'https://' + anfitriao || origem === 'http://' + anfitriao);
+
+    if (mesmoSitio || origem.endsWith('.vercel.app') || origensPermitidas.indexOf(origem) !== -1) {
+      return callback(null, permitir);
+    }
+
+    return callback(new Error('Origem não autorizada pelo CORS.'));
   })
 );
 
