@@ -17,42 +17,68 @@
       if (el && texto) el.textContent = texto;
     }
 
-    definir('c-eyebrow', i.eyebrow);
     definir('c-intro', i.intro);
-    definir('c-botao1', i.botao1);
-    definir('c-botao2', i.botao2);
     definir('c-parceiros-titulo', i.parceiros_titulo);
 
     var titulo = document.getElementById('c-titulo');
-    if (titulo) {
-      titulo.innerHTML = ui.escapar(i.titulo) +
-        (i.titulo_destaque ? '<br><span class="accent">' + ui.escapar(i.titulo_destaque) + '</span>' : '');
+    if (titulo && i.titulo) {
+      titulo.textContent = i.titulo + (i.titulo_destaque ? ' ' + i.titulo_destaque : '');
     }
 
-    desenharSlides(i.slides, r);
+    desenharSlides(i, r);
     desenharParceiros(i.parceiros);
     iniciarSlider();
   });
 
-  function desenharSlides(slides, rodape) {
+  /* Imagens de reserva: se um slide gravado no painel ainda não tiver
+     imagem própria, usa-se a da posição correspondente. */
+  var IMAGENS = [
+    { larga: '/assets/img/hero/loja.webp', alta: '/assets/img/hero/loja-movel.webp' },
+    { larga: '/assets/img/hero/parcerias.webp', alta: '/assets/img/hero/parcerias-movel.webp' },
+    { larga: '/assets/img/hero/pagamentos.webp', alta: '/assets/img/hero/pagamentos-movel.webp' },
+    { larga: '/assets/img/hero/contacto.webp', alta: '/assets/img/hero/contacto-movel.webp' },
+  ];
+
+  function desenharSlides(inicio, rodape) {
     var alvo = document.getElementById('slider');
+    var slides = inicio.slides;
     if (!alvo || !slides || !slides.length) return;
 
     var telefoneLimpo = String(rodape.telefone || '').replace(/[^0-9+]/g, '');
 
-    alvo.innerHTML = slides.map(function (s, indice) {
-      return '<article class="slide' + (indice === 0 ? ' activo' : '') + '">' +
-        '<h2>' + ui.escapar(s.titulo) +
-          (s.destaque ? ' <span class="accent">' + ui.escapar(s.destaque) + '</span>' : '') + '</h2>' +
-        '<p>' + ui.escapar(s.texto) + '</p>' +
-        (s.mostrar_contactos
-          ? '<div class="linha-flex mono" style="margin-top:12px;font-size:14px;color:var(--sand)">' +
-              '<a href="tel:' + ui.escapar(telefoneLimpo) + '" style="text-decoration:none;' +
-                'border-bottom:1px solid rgba(245,234,217,.35)">' + ui.escapar(rodape.telefone) + '</a>' +
-              '<a href="mailto:' + ui.escapar(rodape.email) + '" style="text-decoration:none;' +
-                'border-bottom:1px solid rgba(245,234,217,.35)">' + ui.escapar(rodape.email) + '</a>' +
-            '</div>'
-          : '') +
+    alvo.innerHTML = slides.map(function (s, n) {
+      var reserva = IMAGENS[n % IMAGENS.length];
+      var larga = s.imagem || reserva.larga;
+      var alta = s.imagem_movel || s.imagem || reserva.alta;
+
+      var accoes =
+        '<a class="btn btn-principal" href="' + ui.escapar(s.botao_href || '/loja') + '">' +
+          ui.escapar(s.botao || inicio.botao1 || 'Ver a loja') + '</a>' +
+        (n === 0 && inicio.botao2
+          ? '<a class="btn btn-secundario" href="/loja?condicao=usado">' + ui.escapar(inicio.botao2) + '</a>'
+          : '');
+
+      return '<article class="hb-slide' + (n === 0 ? ' activo' : '') + '" aria-hidden="' + (n === 0 ? 'false' : 'true') + '">' +
+        '<picture>' +
+          '<source media="(max-width:700px)" srcset="' + ui.escapar(alta) + '">' +
+          '<img src="' + ui.escapar(larga) + '" alt="" ' +
+            (n === 0 ? 'fetchpriority="high"' : 'loading="lazy"') + '>' +
+        '</picture>' +
+        '<div class="hb-texto env"><div class="hb-caixa">' +
+          (n === 0 && inicio.eyebrow ? '<p class="eyebrow">' + ui.escapar(inicio.eyebrow) + '</p>' : '') +
+          '<h2>' + ui.escapar(s.titulo) +
+            (s.destaque ? ' <span class="accent">' + ui.escapar(s.destaque) + '</span>' : '') + '</h2>' +
+          '<p>' + ui.escapar(s.texto) + '</p>' +
+          (s.mostrar_contactos
+            ? '<div class="linha-flex mono" style="margin-top:14px;font-size:14px;color:var(--sand)">' +
+                '<a href="tel:' + ui.escapar(telefoneLimpo) + '" style="text-decoration:none;' +
+                  'border-bottom:1px solid rgba(245,234,217,.35)">' + ui.escapar(rodape.telefone) + '</a>' +
+                '<a href="mailto:' + ui.escapar(rodape.email) + '" style="text-decoration:none;' +
+                  'border-bottom:1px solid rgba(245,234,217,.35)">' + ui.escapar(rodape.email) + '</a>' +
+              '</div>'
+            : '') +
+          '<div class="hb-accoes">' + accoes + '</div>' +
+        '</div></div>' +
       '</article>';
     }).join('');
   }
@@ -74,34 +100,80 @@
   }
 
   function iniciarSlider() {
-    var slides = document.querySelectorAll('.slide');
+    var painel = document.getElementById('painel-principal');
+    var slides = document.querySelectorAll('.hb-slide');
     var pontos = document.getElementById('pontos');
-    if (!slides.length || !pontos) return;
+    if (!painel || !slides.length || !pontos) return;
+
+    var actual = 0;
+    var automatico = null;
 
     pontos.innerHTML = '';
-    var actual = 0;
-
     Array.prototype.slice.call(slides).forEach(function (_, i) {
       var b = document.createElement('button');
       b.type = 'button';
-      b.setAttribute('aria-label', 'Ver mensagem ' + (i + 1));
+      b.setAttribute('aria-label', 'Ver destaque ' + (i + 1));
       if (i === 0) b.classList.add('activo');
-      b.addEventListener('click', function () { irPara(i); });
+      b.addEventListener('click', function () { irPara(i); recomecar(); });
       pontos.appendChild(b);
     });
     var botoes = pontos.querySelectorAll('button');
 
+    // setas — só aparecem em ecrãs largos, por CSS
+    var seta = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+      'stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>';
+    if (slides.length > 1) {
+      painel.insertAdjacentHTML('beforeend',
+        '<div class="hb-setas">' +
+          '<button class="hb-seta hb-ant" id="hb-ant" type="button" aria-label="Destaque anterior">' + seta + '</button>' +
+          '<button class="hb-seta hb-seg" id="hb-seg" type="button" aria-label="Destaque seguinte">' + seta + '</button>' +
+        '</div>');
+      document.getElementById('hb-ant').addEventListener('click', function () { andar(-1); recomecar(); });
+      document.getElementById('hb-seg').addEventListener('click', function () { andar(1); recomecar(); });
+    }
+
     function irPara(i) {
       slides[actual].classList.remove('activo');
+      slides[actual].setAttribute('aria-hidden', 'true');
       botoes[actual].classList.remove('activo');
       actual = i;
       slides[actual].classList.add('activo');
+      slides[actual].setAttribute('aria-hidden', 'false');
       botoes[actual].classList.add('activo');
     }
 
-    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      setInterval(function () { irPara((actual + 1) % slides.length); }, 5500);
+    function andar(passo) {
+      irPara((actual + passo + slides.length) % slides.length);
     }
+
+    function recomecar() {
+      if (automatico) clearInterval(automatico);
+      if (slides.length < 2) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      automatico = setInterval(function () { andar(1); }, 6000);
+    }
+
+    // arrastar com o dedo, como se espera num telemóvel
+    var inicioX = null;
+    painel.addEventListener('touchstart', function (ev) {
+      inicioX = ev.touches[0].clientX;
+    }, { passive: true });
+    painel.addEventListener('touchend', function (ev) {
+      if (inicioX === null) return;
+      var delta = ev.changedTouches[0].clientX - inicioX;
+      inicioX = null;
+      if (Math.abs(delta) < 45) return;
+      andar(delta < 0 ? 1 : -1);
+      recomecar();
+    }, { passive: true });
+
+    // não roda enquanto o separador está escondido
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) { if (automatico) clearInterval(automatico); }
+      else recomecar();
+    });
+
+    recomecar();
   }
 
   /* ── categorias ─────────────────────────────────────────── */

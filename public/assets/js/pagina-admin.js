@@ -780,6 +780,17 @@
             { ajuda: 'Aparece a laranja, a seguir ao título.' }) +
         '</div>' +
         campoTexto('sl-' + n + '-texto', 'Texto', s.texto, { area: true, linhas: 3 }) +
+        '<div class="campo-duplo">' +
+          campoTexto('sl-' + n + '-botao', 'Texto do botão', s.botao) +
+          campoTexto('sl-' + n + '-botao-href', 'Para onde leva o botão', s.botao_href,
+            { ajuda: 'Por exemplo /loja ou /loja?categoria=telemoveis' }) +
+        '</div>' +
+        '<div class="campo-duplo">' +
+          campoTexto('sl-' + n + '-imagem', 'Imagem (computador)', s.imagem,
+            { ajuda: 'Endereço da imagem larga. Deixe como está para manter a actual.' }) +
+          campoTexto('sl-' + n + '-imagem-movel', 'Imagem (telemóvel)', s.imagem_movel,
+            { ajuda: 'Versão alta, para ecrãs pequenos. Se ficar vazia, usa a de cima.' }) +
+        '</div>' +
         '<label class="opcao"><input type="checkbox" id="sl-' + n + '-contactos"' +
           (s.mostrar_contactos ? ' checked' : '') + '>' +
           '<span><strong>Mostrar telefone e e-mail neste slide</strong>' +
@@ -801,21 +812,24 @@
         'Os textos da página inicial e do rodapé. Guarde e recarregue a loja para ver o resultado.</p>' +
 
       '<div class="cartao" style="margin-bottom:16px">' +
-        '<h3 style="margin-bottom:16px">Cabeçalho da página inicial</h3>' +
-        campoTexto('in-eyebrow', 'Linha pequena de cima', i.eyebrow) +
+        '<h3 style="margin-bottom:16px">Página inicial</h3>' +
+        campoTexto('in-eyebrow', 'Linha pequena por cima do primeiro destaque', i.eyebrow) +
         '<div class="campo-duplo">' +
-          campoTexto('in-titulo', 'Título', i.titulo) +
-          campoTexto('in-destaque', 'Segunda linha (a laranja)', i.titulo_destaque) +
+          campoTexto('in-titulo', 'Título da página', i.titulo,
+            { ajuda: 'Não aparece à vista. Serve para o Google e para leitores de ecrã.' }) +
+          campoTexto('in-destaque', 'Continuação do título', i.titulo_destaque) +
         '</div>' +
-        campoTexto('in-intro', 'Parágrafo de introdução', i.intro, { area: true, linhas: 3 }) +
+        campoTexto('in-intro', 'Descrição da página', i.intro, { area: true, linhas: 3 }) +
         '<div class="campo-duplo">' +
-          campoTexto('in-botao1', 'Botão principal', i.botao1) +
-          campoTexto('in-botao2', 'Botão secundário', i.botao2) +
+          campoTexto('in-botao1', 'Botão principal (quando o destaque não tem um)', i.botao1) +
+          campoTexto('in-botao2', 'Botão secundário do primeiro destaque', i.botao2) +
         '</div>' +
       '</div>' +
 
       '<div class="cartao" style="margin-bottom:16px">' +
-        '<h3 style="margin-bottom:16px">Painel rotativo</h3>' + htmlSlides +
+        '<h3 style="margin-bottom:6px">Painel principal</h3>' +
+        '<p class="pequeno silenciado" style="margin-bottom:16px">' +
+          'É a faixa grande com imagem, no topo da página inicial.</p>' + htmlSlides +
       '</div>' +
 
       '<div class="cartao" style="margin-bottom:16px">' +
@@ -875,6 +889,10 @@
               titulo: v('sl-' + n + '-titulo'),
               destaque: v('sl-' + n + '-destaque'),
               texto: v('sl-' + n + '-texto'),
+              botao: v('sl-' + n + '-botao'),
+              botao_href: v('sl-' + n + '-botao-href'),
+              imagem: v('sl-' + n + '-imagem'),
+              imagem_movel: v('sl-' + n + '-imagem-movel'),
               mostrar_contactos: document.getElementById('sl-' + n + '-contactos').checked,
             };
           }),

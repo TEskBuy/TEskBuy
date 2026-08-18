@@ -10,33 +10,66 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/teskbuy.css">
+<link rel="stylesheet" href="/assets/css/teskbuy.css?v=20260818">
 <style>
-  .hero{ padding: 54px 0 40px; }
-  .hero-grelha{ display:grid; grid-template-columns: 1.15fr 0.85fr; gap:44px; align-items:center; }
-  .hero h1{ margin:18px 0 16px; }
-  .hero p.intro{ color: var(--ink-dim); font-size:17px; max-width:520px; margin-bottom:26px; }
-  .hero-accoes{ display:flex; gap:12px; flex-wrap:wrap; }
+  /* ── painel principal, de margem a margem ──────────────────
+     A mesma peça serve o telemóvel e o computador: muda a altura,
+     o recorte da imagem e o sítio onde o texto assenta. */
+  .hb{ position:relative; width:100%; overflow:hidden; background: var(--teal-deep); }
+  .hb-pista{ position:relative; height: clamp(360px, 38vw, 520px); }
+  .hb-slide{
+    position:absolute; inset:0; opacity:0; pointer-events:none;
+    transition: opacity .7s ease;
+    display:flex; align-items:center;
+  }
+  .hb-slide.activo{ opacity:1; pointer-events:auto; }
+  .hb-slide img{
+    position:absolute; inset:0; width:100%; height:100%;
+    object-fit:cover; object-position:center; z-index:0;
+  }
+  .hb-texto{ position:relative; z-index:1; }
+  .hb-caixa{ max-width:640px; }
+  .hb-texto .eyebrow{ margin-bottom:14px; }
+  .hb-texto h2{
+    font-size: clamp(27px, 3.6vw, 46px); line-height:1.1; margin-bottom:14px;
+    text-shadow: 0 2px 18px rgba(2,18,24,0.45);
+  }
+  .hb-texto p{ color: var(--ink-dim); font-size: clamp(14.5px, 1.35vw, 17px); max-width:520px; }
+  .hb-accoes{ display:flex; gap:12px; flex-wrap:wrap; margin-top:22px; }
 
-  .slider{ position:relative; min-height:190px; }
-  .slide{
-    position:absolute; inset:0; opacity:0; transform: translateY(12px);
-    transition: opacity .6s ease, transform .6s ease; pointer-events:none;
-    display:flex; flex-direction:column; justify-content:center;
+  /* setas em baixo à direita, alinhadas com o conteúdo da página */
+  .hb-setas{
+    position:absolute; z-index:3; left:0; right:0; bottom:14px;
+    width:min(1200px, 92vw); margin-inline:auto;
+    display:flex; justify-content:flex-end; gap:10px; pointer-events:none;
   }
-  .slide.activo{ opacity:1; transform:none; pointer-events:auto; }
-  .slide h2{ font-size: clamp(20px,2.6vw,27px); margin-bottom:12px; }
-  .slide p{ color: var(--ink-dim); }
-  .painel-slider{
-    background: var(--surface); border:1px solid var(--linha); border-radius: var(--raio-l);
-    padding:28px; box-shadow: var(--sombra);
+  .hb-seta{
+    pointer-events:auto;
+    width:42px; height:42px; border-radius:50%; cursor:pointer;
+    border:1px solid var(--linha-forte); background: rgba(6,48,60,0.55);
+    color: var(--ink); display:flex; align-items:center; justify-content:center;
+    backdrop-filter: blur(6px); transition: background .2s, border-color .2s;
   }
-  .pontos{ display:flex; gap:8px; margin-top:20px; }
+  .hb-seta:hover{ background: rgba(6,48,60,0.85); border-color: var(--orange); }
+  .hb-seta svg{ width:20px; height:20px; }
+  .hb-ant svg{ transform: rotate(180deg); }
+
+  .pontos{
+    position:absolute; z-index:3; left:0; right:0; bottom:28px;
+    width:min(1200px, 92vw); margin-inline:auto;
+    display:flex; gap:8px; justify-content:flex-start;
+  }
   .pontos button{
     width:8px; height:8px; border-radius:50%; border:none; padding:0; cursor:pointer;
-    background: rgba(238,247,248,0.25); transition: background .3s, width .3s;
+    background: rgba(238,247,248,0.35); transition: background .3s, width .3s;
   }
   .pontos button.activo{ background: var(--orange); width:24px; border-radius:5px; }
+
+  /* só para leitores de ecrã e motores de busca */
+  .so-leitores{
+    position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+    overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+  }
 
   .confianca{ display:grid; grid-template-columns: repeat(auto-fit, minmax(210px,1fr)); gap:16px; padding:22px 0 4px; }
   .confianca div{ display:flex; gap:12px; align-items:flex-start; }
@@ -75,9 +108,21 @@
   }
   .newsletter input:focus{ outline:none; border-color: var(--orange); }
 
-  @media (max-width: 880px){
-    .hero-grelha{ grid-template-columns:1fr; gap:30px; }
-    .slider{ min-height:210px; }
+  @media (max-width: 860px){
+    /* no telemóvel arrasta-se com o dedo; as setas só ocupavam espaço */
+    .hb-setas{ display:none; }
+  }
+  @media (max-width: 700px){
+    /* no telemóvel o painel fica alto e o texto assenta em baixo */
+    .hb-pista{ height: clamp(430px, 118vw, 600px); }
+    .hb-slide{ align-items:flex-end; }
+    .hb-texto{ padding-bottom:54px; }
+    .hb-caixa{ max-width:none; }
+    .hb-texto h2{ font-size: clamp(25px, 7.4vw, 34px); }
+    .hb-texto p{ font-size:14.5px; }
+    .hb-accoes{ margin-top:18px; }
+    .hb-accoes .btn{ flex:1 1 auto; }
+    .pontos{ bottom:22px; }
   }
 </style>
 </head>
@@ -88,44 +133,28 @@
 <header id="cabecalho"></header>
 
 <main>
-  <section class="hero env">
-    <div class="hero-grelha">
-      <div>
-        <p class="eyebrow" id="c-eyebrow">Loja aberta · Entregamos em Angola</p>
-        <h1 id="c-titulo">Tecnologia e livros<br>com <span class="accent">qualidade garantida</span></h1>
-        <p class="intro" id="c-intro">Telemóveis, computadores, impressoras, livros e eletrodomésticos — novos e usados, verificados um a um antes de sairem do nosso armazém.</p>
-        <div class="hero-accoes">
-          <a class="btn btn-principal" href="/loja" id="c-botao1">Ver a loja</a>
-          <a class="btn btn-secundario" href="/loja?condicao=usado" id="c-botao2">Usados verificados</a>
-        </div>
-      </div>
+  <section class="hb" aria-label="Destaques da loja" id="painel-principal">
+    <h1 class="so-leitores" id="c-titulo">TeskBuy — tecnologia e livros com qualidade garantida</h1>
+    <p class="so-leitores" id="c-intro">Telemóveis, computadores, impressoras, livros e eletrodomésticos — novos e usados, verificados um a um antes de saírem do nosso armazém.</p>
 
-      <div class="painel-slider">
-        <div class="slider" id="slider">
-          <article class="slide activo">
+    <div class="hb-pista" id="slider">
+      <article class="hb-slide activo">
+        <img src="/assets/img/hero/loja.webp" alt="" fetchpriority="high">
+        <div class="hb-texto env">
+          <div class="hb-caixa">
+            <p class="eyebrow">Loja aberta · Entregamos em Angola</p>
             <h2>Tudo o que precisa, <span class="accent">num só lugar</span></h2>
             <p>Uma loja angolana dedicada a eletrodomésticos, telemóveis, computadores, livros e impressoras — novos e usados, sempre em bom estado.</p>
-          </article>
-          <article class="slide">
-            <h2>Parcerias que fazem a <span class="accent">diferença</span></h2>
-            <p>Trabalhamos com redes internacionais de confiança, como a Xianyu e a YITOO, para trazer as melhores ofertas até Angola.</p>
-          </article>
-          <article class="slide">
-            <h2>Paga como <span class="accent">preferir</span></h2>
-            <p>Multicaixa Express, transferência bancária ou numerário na entrega. Escolhe no checkout, sem complicações.</p>
-          </article>
-          <article class="slide">
-            <h2>Fale <span class="accent">connosco</span></h2>
-            <p>Estamos a um telefonema de distância.</p>
-            <div class="linha-flex mono" style="margin-top:12px;font-size:14px;color:var(--sand)">
-              <a href="tel:+244943277184" style="text-decoration:none;border-bottom:1px solid rgba(245,234,217,.35)">+244 943 277 184</a>
-              <a href="mailto:info@teskbuy.com" style="text-decoration:none;border-bottom:1px solid rgba(245,234,217,.35)">info@teskbuy.com</a>
+            <div class="hb-accoes">
+              <a class="btn btn-principal" href="/loja">Ver a loja</a>
+              <a class="btn btn-secundario" href="/loja?condicao=usado">Usados verificados</a>
             </div>
-          </article>
+          </div>
         </div>
-        <div class="pontos" id="pontos"></div>
-      </div>
+      </article>
     </div>
+
+    <div class="pontos" id="pontos"></div>
   </section>
 
   <section class="seccao env">
@@ -172,9 +201,9 @@
 
 <footer id="rodape"></footer>
 
-<script src="/assets/js/api.js"></script>
-<script src="/assets/js/estado.js"></script>
-<script src="/assets/js/ui.js"></script>
-<script src="/assets/js/pagina-inicio.js"></script>
+<script src="/assets/js/api.js?v=20260818"></script>
+<script src="/assets/js/estado.js?v=20260818"></script>
+<script src="/assets/js/ui.js?v=20260818"></script>
+<script src="/assets/js/pagina-inicio.js?v=20260818"></script>
 </body>
 </html>

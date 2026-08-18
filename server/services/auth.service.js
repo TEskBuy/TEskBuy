@@ -168,17 +168,54 @@ async function pedirRecuperacao(email, origem) {
   return { enviado: true };
 }
 
+/**
+ * Define a palavra-passe a partir de um access token.
+ *
+ * Fala directamente com o serviço de autenticação do Supabase em vez de
+ * usar cliente.auth.updateUser(): esse método procura uma sessão guardada
+ * dentro do cliente e, como aqui só temos o token, falhava sempre com
+ * "Auth session missing!". Por HTTP basta o token — serve tanto para a
+ * ligação de recuperação como para a mudança feita dentro da conta.
+ */
 async function definirNovaPalavraPasse(accessToken, novaPalavraPasse) {
-  const cliente = comUtilizador(accessToken);
-  const { error } = await cliente.auth.updateUser({ password: novaPalavraPasse });
-  if (error) throw erros.pedidoInvalido(traduz(error.message));
+  let resposta;
+  try {
+    resposta = await fetch(`${env.supabase.url}/auth/v1/user`, {
+      method: 'PUT',
+      headers: {
+        apikey: env.supabase.anonKey,
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ password: novaPalavraPasse }),
+    });
+  } catch (e) {
+    throw erros.interno('Não foi possível contactar o serviço de autenticação. Tente novamente.');
+  }
+
+  const corpo = await resposta.json().catch(() => ({}));
+
+  if (!resposta.ok) {
+    const mensagem = corpo.msg || corpo.error_description || corpo.message || '';
+    if (resposta.status === 401) {
+      throw erros.naoAutenticado('A ligação expirou. Peça uma nova.');
+    }
+    if (String(mensagem).toLowerCase().includes('should be different')) {
+      throw erros.pedidoInvalido('A nova palavra-passe tem de ser diferente da anterior.');
+    }
+    throw erros.pedidoInvalido(traduz(mensagem));
+  }
+
   return { actualizada: true };
 }
 
 async function alterarPalavraPasse(accessToken, actual, nova, email) {
-  const { error: errVerificacao } = await publico.auth.signInWithPassword({ email, password: actual });
-  if (errVerificacao) throw erros.pedidoInvalido('A palavra-passe actual está incorrecta.');
-  return definirNovaPalavraPasse(accessToken, nova);
+  // Confirma a palavra-passe actual e aproveita a sessão nova daí resultante,
+  // que é sempre válida — o token vindo do pedido pode já estar a expirar.
+  const { data, error } = await publico.auth.signInWithPassword({ email, password: actual });
+  if (error) throw erros.pedidoInvalido('A palavra-passe actual está incorrecta.');
+
+  return definirNovaPalavraPasse(data.session.access_token, nova);
 }
 
 module.exports = {

@@ -69,8 +69,17 @@ app.use(
 // Cabeçalhos extra (o vercel.json em modo "routes" não permite a chave headers)
 app.use((req, res, next) => {
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  // Os ficheiros não têm o conteúdo no nome (é sempre teskbuy.css, ui.js…),
+  // por isso "immutable" prendia o navegador na versão antiga durante um ano:
+  // publicava-se uma alteração e ninguém a via. O CSS e o JS passam a ser
+  // reconfirmados a cada visita — quando não mudam, a resposta é um 304 vazio.
+  // As imagens, essas, podem ficar guardadas à vontade.
   if (req.path.startsWith('/assets/')) {
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    const estatico = /\.(png|jpe?g|webp|avif|gif|svg|ico|woff2?|ttf|otf)$/i.test(req.path);
+    res.setHeader(
+      'Cache-Control',
+      estatico ? 'public, max-age=2592000' : 'public, max-age=0, must-revalidate'
+    );
   }
   next();
 });

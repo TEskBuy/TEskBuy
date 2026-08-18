@@ -15,6 +15,11 @@
     coracaoCheio: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.5s-7.5-4.7-7.5-9.6A4.4 4.4 0 0 1 12 8.3a4.4 4.4 0 0 1 7.5 2.6c0 4.9-7.5 9.6-7.5 9.6z"/></svg>',
     conta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/></svg>',
     menu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+    fechar: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+    correio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="m3.5 7 8.5 6 8.5-6"/></svg>',
+    telefone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6.2 3.5h3l1.5 3.8-2 1.4a12 12 0 0 0 5.6 5.6l1.4-2 3.8 1.5v3a1.8 1.8 0 0 1-2 1.8A16.5 16.5 0 0 1 4.4 5.5a1.8 1.8 0 0 1 1.8-2z"/></svg>',
+    local: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.1 7-11a7 7 0 1 0-14 0c0 4.9 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>',
+    chevron: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
     facebook: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-8.2h2.75l.41-3.2h-3.16V7.6c0-.93.26-1.56 1.6-1.56h1.7V3.14C16.5 3.1 15.53 3 14.4 3 12.03 3 10.4 4.44 10.4 7.3v2.3H7.65v3.2h2.75V21h3.1z"/></svg>',
     whatsapp: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.6-6.1c-.25-.13-1.48-.73-1.7-.81-.23-.09-.4-.13-.56.12-.17.25-.65.8-.8.97-.14.16-.29.19-.54.06a6.7 6.7 0 0 1-3.3-2.9c-.25-.43.25-.4.71-1.33.08-.16.04-.3-.02-.42-.06-.13-.56-1.35-.77-1.85-.2-.48-.4-.41-.56-.42h-.47c-.16 0-.42.06-.64.3-.22.25-.84.82-.84 2s.86 2.32.98 2.48c.13.16 1.7 2.6 4.12 3.64 1.53.66 2.13.72 2.9.6.46-.06 1.48-.6 1.69-1.19.2-.58.2-1.08.15-1.19-.06-.1-.23-.16-.48-.28z"/></svg>',
     seta: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
@@ -135,6 +140,34 @@
           ligacoes.map(function (l) {
             return '<a href="' + l.href + '"' + (paginaActiva === l.id ? ' class="activo"' : '') + '>' + l.texto + '</a>';
           }).join('') +
+          // só visível quando o menu abre no telemóvel
+          '<div class="nav-extra">' +
+            '<div class="nav-bloco">' +
+              '<h4>A minha conta</h4>' +
+              (u
+                ? '<a class="nav-contacto" href="/conta">' + ico.conta + '<span>A minha conta</span></a>' +
+                  '<a class="nav-contacto" href="/encomendas">' + ico.carrinho + '<span>As minhas encomendas</span></a>'
+                : '<a class="nav-contacto" href="/entrar">' + ico.conta + '<span>Entrar</span></a>' +
+                  '<a class="nav-contacto" href="/entrar?registo=1">' + ico.mais + '<span>Criar conta</span></a>') +
+              '<a class="nav-contacto" href="/favoritos">' + ico.coracao + '<span>Favoritos</span></a>' +
+            '</div>' +
+            '<div class="nav-bloco">' +
+              '<h4>Precisa de ajuda?</h4>' +
+              '<a class="nav-contacto" id="nav-tel-lig" href="tel:">' +
+                ico.telefone + '<span id="nav-telefone">' + escapar(CONTEUDO_PADRAO.rodape.telefone) + '</span></a>' +
+              '<a class="nav-contacto" href="mailto:' + escapar(CONTEUDO_PADRAO.rodape.email) + '" id="nav-email-lig">' +
+                ico.correio + '<span id="nav-email">' + escapar(CONTEUDO_PADRAO.rodape.email) + '</span></a>' +
+            '</div>' +
+            '<div class="nav-bloco">' +
+              '<h4>Siga-nos</h4>' +
+              '<div class="nav-redes">' +
+                '<a id="nav-facebook" href="' + escapar(CONTEUDO_PADRAO.rodape.facebook) + '" target="_blank" rel="noopener" aria-label="Facebook">' +
+                  ico.facebook + '</a>' +
+                '<a id="nav-whatsapp" href="' + escapar(CONTEUDO_PADRAO.rodape.whatsapp) + '" target="_blank" rel="noopener" aria-label="WhatsApp">' +
+                  ico.whatsapp + '</a>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
         '</nav>' +
         '<form class="procura" id="form-procura" role="search">' +
           ico.procurar +
@@ -158,8 +191,52 @@
         '</div>' +
       '</div>';
 
+    /* ── gaveta do menu no telemóvel ──────────────────────────
+       O botão passa a X enquanto está aberta e o fundo deixa de
+       rolar, para o menu se comportar como um painel a sério. */
     var nav = document.getElementById('nav');
-    document.getElementById('btn-menu').addEventListener('click', function () { nav.classList.toggle('aberta'); });
+    var botaoMenu = document.getElementById('btn-menu');
+
+    function menu(abrir) {
+      nav.classList.toggle('aberta', abrir);
+      botaoMenu.innerHTML = abrir ? ico.fechar : ico.menu;
+      botaoMenu.setAttribute('aria-label', abrir ? 'Fechar menu' : 'Abrir menu');
+      botaoMenu.setAttribute('aria-expanded', abrir ? 'true' : 'false');
+      document.body.classList.toggle('sem-rolagem', abrir);
+    }
+
+    botaoMenu.setAttribute('aria-expanded', 'false');
+    botaoMenu.addEventListener('click', function () {
+      menu(!nav.classList.contains('aberta'));
+    });
+    nav.addEventListener('click', function (ev) {
+      if (ev.target.closest('a')) menu(false);
+    });
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && nav.classList.contains('aberta')) menu(false);
+    });
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 780 && nav.classList.contains('aberta')) menu(false);
+    });
+
+    // contactos reais do painel, assim que chegarem
+    conteudo(function (c) {
+      var r = c.rodape;
+      var limpo = String(r.telefone || '').replace(/[^0-9+]/g, '');
+      var tel = document.getElementById('nav-tel-lig');
+      var telTexto = document.getElementById('nav-telefone');
+      var mail = document.getElementById('nav-email-lig');
+      var mailTexto = document.getElementById('nav-email');
+      var fb = document.getElementById('nav-facebook');
+      var wa = document.getElementById('nav-whatsapp');
+      if (tel) tel.href = 'tel:' + limpo;
+      if (telTexto) telTexto.textContent = r.telefone;
+      if (mail) mail.href = 'mailto:' + r.email;
+      if (mailTexto) mailTexto.textContent = r.email;
+      if (fb) fb.href = r.facebook;
+      if (wa) wa.href = r.whatsapp;
+    });
+
     document.getElementById('btn-procura-movel').addEventListener('click', function () {
       var p = document.getElementById('form-procura');
       p.classList.toggle('aberta');
@@ -223,13 +300,21 @@
       botao2: 'Usados verificados',
       slides: [
         { titulo: 'Tudo o que precisa,', destaque: 'num só lugar',
-          texto: 'Uma loja angolana dedicada a eletrodomésticos, telemóveis, computadores, livros e impressoras — novos e usados, sempre em bom estado.' },
+          texto: 'Uma loja angolana dedicada a eletrodomésticos, telemóveis, computadores, livros e impressoras — novos e usados, sempre em bom estado.',
+          botao: 'Ver a loja', botao_href: '/loja',
+          imagem: '/assets/img/hero/loja.webp', imagem_movel: '/assets/img/hero/loja-movel.webp' },
         { titulo: 'Parcerias que fazem a', destaque: 'diferença',
-          texto: 'Trabalhamos com redes internacionais de confiança, como a Xianyu e a YITOO, para trazer as melhores ofertas até Angola.' },
+          texto: 'Trabalhamos com redes internacionais de confiança, como a Xianyu e a YITOO, para trazer as melhores ofertas até Angola.',
+          botao: 'Ver novidades', botao_href: '/loja?ordenar=recentes',
+          imagem: '/assets/img/hero/parcerias.webp', imagem_movel: '/assets/img/hero/parcerias-movel.webp' },
         { titulo: 'Paga como', destaque: 'preferir',
-          texto: 'Multicaixa Express, transferência bancária ou numerário na entrega. Escolhe no checkout, sem complicações.' },
+          texto: 'Multicaixa Express, transferência bancária ou numerário na entrega. Escolhe no checkout, sem complicações.',
+          botao: 'Começar a comprar', botao_href: '/loja',
+          imagem: '/assets/img/hero/pagamentos.webp', imagem_movel: '/assets/img/hero/pagamentos-movel.webp' },
         { titulo: 'Fale', destaque: 'connosco',
-          texto: 'Estamos a um telefonema de distância.', mostrar_contactos: true },
+          texto: 'Estamos a um telefonema de distância — tire dúvidas antes de comprar.',
+          mostrar_contactos: true, botao: 'Contacte-nos', botao_href: '/informacoes?p=contacte-nos',
+          imagem: '/assets/img/hero/contacto.webp', imagem_movel: '/assets/img/hero/contacto-movel.webp' },
       ],
       confianca: [
         { titulo: 'Qualidade verificada', texto: 'Cada artigo é testado antes de sair do armazém.' },
@@ -350,47 +435,66 @@
                 '<button class="btn btn-principal btn-pequeno" type="submit">Subscrever</button>' +
               '</div>' +
             '</form>' +
-            '<div class="linha-flex" style="margin-top:16px">' +
-              '<a class="pilula" href="' + escapar(r.facebook) + '" target="_blank" rel="noopener">Facebook</a>' +
-              '<a class="pilula" href="' + escapar(r.whatsapp) + '" target="_blank" rel="noopener">WhatsApp</a>' +
+            '<div class="rodape-redes">' +
+              '<h4>Siga-nos</h4>' +
+              '<div>' +
+                '<a href="' + escapar(r.facebook) + '" target="_blank" rel="noopener" aria-label="Facebook">' + ico.facebook + '</a>' +
+                '<a href="' + escapar(r.whatsapp) + '" target="_blank" rel="noopener" aria-label="WhatsApp">' + ico.whatsapp + '</a>' +
+              '</div>' +
             '</div>' +
           '</div>' +
-          '<div><h4>Empresa</h4><ul>' +
+          coluna('Empresa',
             '<li><a href="/informacoes?p=sobre-nos">Sobre Nós</a></li>' +
-            '<li><a href="/informacoes?p=contacte-nos">Contacte-nos</a></li>' +
-          '</ul></div>' +
-          '<div><h4>Links úteis</h4><ul>' +
+            '<li><a href="/informacoes?p=contacte-nos">Contacte-nos</a></li>') +
+          coluna('Links úteis',
             '<li><a href="/loja">Pesquisa</a></li>' +
-            '<li><a href="/informacoes?p=perguntas-frequentes">Perguntas Frequentes</a></li>' +
-          '</ul></div>' +
-          '<div><h4>Conformidade</h4><ul>' +
+            '<li><a href="/informacoes?p=perguntas-frequentes">Perguntas Frequentes</a></li>') +
+          coluna('Conformidade',
             '<li><a href="/informacoes?p=termos">Termos de Serviço</a></li>' +
             '<li><a href="/informacoes?p=privacidade">Política de Privacidade</a></li>' +
             '<li><a href="/informacoes?p=envio">Política de Envio</a></li>' +
             '<li><a href="/informacoes?p=devolucoes">Devoluções e Reembolsos</a></li>' +
-            '<li><a href="/informacoes?p=garantia">Política de Garantia</a></li>' +
-          '</ul></div>' +
-          '<div><h4>Contactos</h4><ul>' +
-            '<li><a href="tel:' + escapar(telefoneLimpo) + '">' + escapar(r.telefone) + '</a></li>' +
-            '<li><a href="mailto:' + escapar(r.email) + '">' + escapar(r.email) + '</a></li>' +
-            '<li><span class="silenciado">' + escapar(r.local) + '</span></li>' +
-          '</ul></div>' +
+            '<li><a href="/informacoes?p=garantia">Política de Garantia</a></li>') +
+          coluna('Contactos',
+            '<li><a href="tel:' + escapar(telefoneLimpo) + '">' + ico.telefone + escapar(r.telefone) + '</a></li>' +
+            '<li><a href="mailto:' + escapar(r.email) + '">' + ico.correio + escapar(r.email) + '</a></li>' +
+            '<li><span class="silenciado">' + ico.local + escapar(r.local) + '</span></li>', true) +
         '</div>' +
-        '<div class="rodape-base" style="display:block">' +
-          '<p class="pagamentos">Pagamentos aceites</p>' +
-          '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px">' +
-            PAGAMENTOS.map(function (p) {
-              return '<img src="/assets/img/pagamentos/' + p.ficheiro + '" alt="' + escapar(p.nome) + '" ' +
-                'title="' + escapar(p.nome) + '" loading="lazy" ' +
-                'style="height:' + p.altura + 'px;width:auto;display:block">';
-            }).join('') +
+        '<div class="rodape-base">' +
+          '<div class="rodape-pagamentos">' +
+            '<p class="pagamentos">Nós aceitamos</p>' +
+            '<div class="rodape-logos">' +
+              PAGAMENTOS.map(function (p) {
+                return '<img src="/assets/img/pagamentos/' + p.ficheiro + '" alt="' + escapar(p.nome) + '" ' +
+                  'title="' + escapar(p.nome) + '" loading="lazy" ' +
+                  'style="height:' + p.altura + 'px;width:auto;display:block">';
+              }).join('') +
+            '</div>' +
           '</div>' +
-          '<p style="margin-top:20px">Copyright ' + new Date().getFullYear() +
+          '<p class="rodape-direitos">Copyright ' + new Date().getFullYear() +
             ' TeskBuy. Todos os direitos reservados.</p>' +
         '</div>' +
       '</div>';
 
     ligarNewsletter();
+    ligarSanfonaRodape();
+  }
+
+  /** Uma coluna do rodapé. No telemóvel fecha-se e abre ao toque. */
+  function coluna(titulo, itens, aberta) {
+    return '<div class="rodape-col' + (aberta ? ' aberta' : '') + '">' +
+      '<h4><span>' + escapar(titulo) + '</span>' + ico.chevron + '</h4>' +
+      '<ul>' + itens + '</ul></div>';
+  }
+
+  /** Só tem efeito no telemóvel — no computador as colunas estão sempre abertas. */
+  function ligarSanfonaRodape() {
+    Array.prototype.slice.call(document.querySelectorAll('.rodape-col > h4')).forEach(function (t) {
+      t.addEventListener('click', function () {
+        if (window.innerWidth > 700) return;
+        t.parentNode.classList.toggle('aberta');
+      });
+    });
   }
 
   /** Subscrição da newsletter, agora no rodapé de todas as páginas. */
