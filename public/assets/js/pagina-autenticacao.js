@@ -51,6 +51,79 @@
     history.replaceState(null, '', location.pathname);
   }
 
+  /* ── confirmação da conta com código de 6 dígitos ───────── */
+  function mostrarCaixaCodigo(email) {
+    limpar();
+
+    var caixa = document.createElement('div');
+    caixa.innerHTML =
+      '<p class="sub" style="margin-bottom:20px">Enviámos um código de 6 dígitos para <strong>' +
+        ui.escapar(email) + '</strong>. Escreva-o aqui para activar a conta.</p>' +
+      '<div id="aviso-codigo"></div>' +
+      '<div class="campo">' +
+        '<label for="codigo">Código de confirmação</label>' +
+        '<input id="codigo" name="codigo" type="text" inputmode="numeric" autocomplete="one-time-code" ' +
+          'maxlength="6" placeholder="000000" ' +
+          'style="text-align:center;letter-spacing:.5em;font-family:\'IBM Plex Mono\',monospace;font-size:22px">' +
+      '</div>' +
+      '<button class="btn btn-principal btn-largo" id="btn-confirmar" type="button">Confirmar conta</button>' +
+      '<p class="rodape-form">Não recebeu? ' +
+        '<a href="#" id="btn-reenviar">Enviar outro código</a></p>';
+
+    form.parentNode.insertBefore(caixa, form.nextSibling);
+
+    var campo = caixa.querySelector('#codigo');
+    var btnConfirmar = caixa.querySelector('#btn-confirmar');
+    var btnReenviar = caixa.querySelector('#btn-reenviar');
+    var alvoAviso = caixa.querySelector('#aviso-codigo');
+
+    function avisar(mensagem, tipo) {
+      alvoAviso.innerHTML = '<div class="aviso aviso-' + (tipo || 'info') +
+        '" style="margin-bottom:18px">' + ui.escapar(mensagem) + '</div>';
+    }
+
+    // aceita apenas dígitos
+    campo.addEventListener('input', function () {
+      campo.value = campo.value.replace(/\D/g, '').slice(0, 6);
+    });
+    campo.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter') { ev.preventDefault(); btnConfirmar.click(); }
+    });
+    campo.focus();
+
+    btnConfirmar.addEventListener('click', function () {
+      var codigo = campo.value.trim();
+      if (codigo.length !== 6) { avisar('Escreva os 6 dígitos do código.', 'erro'); return; }
+
+      alvoAviso.innerHTML = '';
+      btnConfirmar.disabled = true;
+      btnConfirmar.textContent = 'A confirmar…';
+
+      api.post('/auth/confirmar', { email: email, codigo: codigo })
+        .then(function (r) {
+          api.sessao.guardar(r.dados.sessao);
+          api.utilizador.guardar(r.dados.utilizador);
+          return ui.sincronizarAposLogin().then(function () { location.href = destino(); });
+        })
+        .catch(function (e) {
+          btnConfirmar.disabled = false;
+          btnConfirmar.textContent = 'Confirmar conta';
+          avisar(detalhes(e), 'erro');
+          campo.select();
+        });
+    });
+
+    btnReenviar.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      btnReenviar.textContent = 'A enviar…';
+
+      api.post('/auth/reenviar-codigo', { email: email })
+        .then(function (r) { avisar(r.mensagem, 'ok'); })
+        .catch(function (e) { avisar(detalhes(e), 'erro'); })
+        .then(function () { btnReenviar.textContent = 'Enviar outro código'; });
+    });
+  }
+
   form.addEventListener('submit', function (ev) {
     ev.preventDefault();
     limpar();
@@ -78,7 +151,7 @@
         .then(function (r) {
           if (r.dados.precisa_confirmar) {
             form.style.display = 'none';
-            mostrar('Conta criada. Confirme o e-mail que enviámos para ' + form.email.value.trim() + ' e depois inicie sessão.', 'ok');
+            mostrarCaixaCodigo(form.email.value.trim());
             return;
           }
           api.sessao.guardar(r.dados.sessao);
