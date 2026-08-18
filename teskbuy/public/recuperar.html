@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recuperar palavra-passe — TeskBuy</title>
+<meta name="description" content="Receba um e-mail para definir uma nova palavra-passe.">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" type="image/png" href="/assets/img/favicon.png">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/teskbuy.css">
+<style>
+  .autenticacao{ display:flex; align-items:center; justify-content:center; padding:48px 0 64px; }
+  .caixa{ width:min(430px, 100%); }
+  .caixa .cartao{ padding:30px; }
+  .caixa h1{ font-size:27px; margin-bottom:6px; }
+  .caixa .sub{ color:var(--ink-dim); font-size:14px; margin-bottom:24px; }
+  .caixa .rodape-form{ text-align:center; margin-top:18px; font-size:14px; color:var(--ink-dim); }
+  .caixa .rodape-form a{ color:var(--orange-soft); text-decoration:none; }
+  .marca-topo{ display:flex; justify-content:center; margin-bottom:26px; }
+  .marca-topo img{ height:38px; }
+</style>
+</head>
+<body>
+<div class="bg-glow"></div><div class="route-lines"></div>
+<header id="cabecalho"></header>
+<main class="env autenticacao">
+  <div class="caixa">
+    <div class="marca-topo"><a href="/"><img src="/assets/img/logo-full.png" alt="TeskBuy"></a></div>
+    <div class="cartao">
+      <h1>Recuperar acesso</h1>
+      <p class="sub">Indique o e-mail da conta. Enviamos uma ligação para definir uma nova palavra-passe.</p>
+      <div id="aviso"></div>
+      <form id="form">
+        <div class="campo"><label for="email">E-mail</label>
+          <input type="email" id="email" name="email" autocomplete="email" required placeholder="o.seu.email@exemplo.ao"></div>
+        <button class="btn btn-principal btn-largo" type="submit" id="submeter">Enviar instruções</button>
+      </form>
+      <p class="rodape-form">Lembrou-se? <a href="/entrar">Voltar a entrar</a></p>
+    </div>
+  </div>
+</main>
+<footer id="rodape"></footer>
+<script src="/assets/js/api.js"></script>
+<script src="/assets/js/estado.js"></script>
+<script src="/assets/js/ui.js"></script>
+<script src="/assets/js/pagina-autenticacao.js"></script>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Informações — TeskBuy</title>
+<meta name="description" content="Informações sobre a TeskBuy: quem somos, contactos, entregas, garantias e políticas da loja.">
+<link rel="icon" type="image/png" href="/assets/img/favicon.png">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/teskbuy.css">
+<style>
+  .info-grelha{ display:grid; grid-template-columns: 230px 1fr; gap:34px; align-items:start; padding:30px 0 56px; }
+  .info-menu{ display:flex; flex-direction:column; gap:2px; position:sticky; top:calc(var(--cabecalho-altura) + 20px); }
+  .info-menu a{
+    text-decoration:none; color:var(--ink-dim); font-size:14.5px;
+    padding:10px 14px; border-radius:var(--raio-s);
+  }
+  .info-menu a:hover{ background:rgba(238,247,248,.06); color:var(--ink); }
+  .info-menu a.activo{ background:rgba(242,102,13,.14); color:var(--orange-soft); }
+  .info-menu h4{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--ink-dim); font-weight:500; margin:16px 0 8px 14px;
+  }
+  .info-corpo h1{ font-size:clamp(26px,3.4vw,34px); margin-bottom:8px; }
+  .info-corpo h2{ font-size:19px; margin:26px 0 10px; }
+  .info-corpo p{ margin-bottom:12px; max-width:720px; color:var(--ink-dim); }
+  .info-corpo ul{ margin:0 0 14px 20px; color:var(--ink-dim); }
+  .info-corpo li{ margin-bottom:7px; }
+  .info-corpo strong{ color:var(--ink); }
+  .info-grelha > *{ min-width:0; }
+  @media (max-width:820px){
+    .info-grelha{ grid-template-columns:1fr; gap:20px; }
+    .info-menu{
+      position:static; flex-direction:row; flex-wrap:nowrap; gap:6px;
+      overflow-x:auto; -webkit-overflow-scrolling:touch;
+      padding-bottom:6px; scrollbar-width:none;
+    }
+    .info-menu::-webkit-scrollbar{ display:none; }
+    .info-menu h4{ display:none; }
+    .info-menu a{
+      flex:0 0 auto; white-space:nowrap; padding:9px 14px;
+      border:1px solid var(--linha); border-radius:999px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="bg-glow"></div><div class="route-lines"></div>
+
+<header id="cabecalho"></header>
+
+<main class="env">
+  <div class="info-grelha">
+    <nav class="info-menu" id="info-menu"></nav>
+    <article class="info-corpo" id="info-corpo"></article>
+  </div>
+</main>
+
+<footer id="rodape"></footer>
+
+<script src="/assets/js/api.js"></script>
+<script src="/assets/js/estado.js"></script>
+<script src="/assets/js/ui.js"></script>
+<script>
+(function () {
+  'use strict';
+  var ui = window.TBUI;
+  ui.iniciar();
+
+  var TELEFONE = '+244 943 277 184';
+  var EMAIL = 'info@teskbuy.com';
+
+  var porDefinir =
+    '<div class="aviso aviso-info" style="margin-bottom:22px">' +
+      '<span>Esta página está a ser preparada. Enquanto isso, fale connosco pelo ' +
+      '<strong>' + TELEFONE + '</strong> ou por <strong>' + EMAIL + '</strong> — respondemos a tudo.</span>' +
+    '</div>';
+
+  var PAGINAS = {
+    'sobre-nos': {
+      titulo: 'Sobre Nós',
+      grupo: 'Empresa',
+      html:
+        '<p>A <strong>TeskBuy</strong> é uma loja online angolana. Vendemos eletrodomésticos, telemóveis, ' +
+        'computadores, impressoras, livros e acessórios — novos e usados — com entrega em Luanda e em todo o país.</p>' +
+        '<h2>Como trabalhamos</h2>' +
+        '<p>Cada artigo é verificado antes de sair do nosso armazém. Nos usados, descrevemos o estado com ' +
+        'honestidade: o cliente sabe exatamente o que está a comprar.</p>' +
+        '<h2>Parcerias</h2>' +
+        '<p>Trabalhamos com redes internacionais de confiança, como a Xianyu e a YITOO, para trazer ' +
+        'melhores preços até Angola.</p>' +
+        '<h2>Onde estamos</h2>' +
+        '<p>Luanda, Angola. Atendemos por telefone e WhatsApp pelo <strong>' + TELEFONE + '</strong>.</p>'
+    },
+    'contacte-nos': {
+      titulo: 'Contacte-nos',
+      grupo: 'Empresa',
+      html:
+        '<p>Estamos a um telefonema de distância. Para dúvidas sobre produtos, encomendas em curso, ' +
+        'trocas ou garantias, use o canal que lhe for mais cómodo.</p>' +
+        '<h2>Telefone e WhatsApp</h2>' +
+        '<p><a href="tel:+244943277184" style="color:var(--orange-soft)">' + TELEFONE + '</a></p>' +
+        '<h2>E-mail</h2>' +
+        '<p><a href="mailto:' + EMAIL + '" style="color:var(--orange-soft)">' + EMAIL + '</a></p>' +
+        '<h2>Encomendas</h2>' +
+        '<p>Se já tem uma encomenda, indique o número dela (começa por <span class="mono">TB-</span>) ' +
+        'para acelerarmos a resposta. Pode consultá-lo em ' +
+        '<a href="/encomendas" style="color:var(--orange-soft)">As minhas encomendas</a>.</p>'
+    },
+    'perguntas-frequentes': {
+      titulo: 'Perguntas Frequentes',
+      grupo: 'Links úteis',
+      html:
+        '<h2>Quanto tempo demora a entrega?</h2>' +
+        '<p>Em Luanda, 24 a 48 horas. Nas restantes províncias, entre 3 e 7 dias úteis.</p>' +
+        '<h2>Quanto custa a entrega?</h2>' +
+        '<p>Grátis acima de 250.000 Kz. Abaixo desse valor, 3.500 Kz em Luanda e 12.000 Kz nas províncias.</p>' +
+        '<h2>Como posso pagar?</h2>' +
+        '<p>Multicaixa Express, transferência bancária ou numerário na entrega. Escolhe no checkout.</p>' +
+        '<h2>Os produtos usados têm garantia?</h2>' +
+        '<p>A garantia varia de artigo para artigo e está indicada na ficha de cada produto.</p>' +
+        '<h2>Posso cancelar uma encomenda?</h2>' +
+        '<p>Sim, enquanto estiver <em>pendente</em> ou <em>confirmada</em>. Depois disso, contacte-nos pelo ' +
+        '<strong>' + TELEFONE + '</strong>.</p>'
+    },
+    'termos':      { titulo: 'Termos de Serviço',          grupo: 'Conformidade', html: porDefinir },
+    'privacidade': { titulo: 'Política de Privacidade',    grupo: 'Conformidade', html: porDefinir },
+    'envio':       { titulo: 'Política de Envio',          grupo: 'Conformidade', html: porDefinir },
+    'devolucoes':  { titulo: 'Devoluções e Reembolsos',    grupo: 'Conformidade', html: porDefinir },
+    'garantia':    { titulo: 'Política de Garantia',       grupo: 'Conformidade', html: porDefinir }
+  };
+
+  var chave = new URLSearchParams(location.search).get('p') || 'sobre-nos';
+  if (!PAGINAS[chave]) chave = 'sobre-nos';
+
+  var grupos = ['Empresa', 'Links úteis', 'Conformidade'];
+  document.getElementById('info-menu').innerHTML = grupos.map(function (g) {
+    var itens = Object.keys(PAGINAS).filter(function (k) { return PAGINAS[k].grupo === g; });
+    if (!itens.length) return '';
+    return '<h4>' + g + '</h4>' + itens.map(function (k) {
+      return '<a href="/informacoes?p=' + k + '"' + (k === chave ? ' class="activo"' : '') + '>' +
+        ui.escapar(PAGINAS[k].titulo) + '</a>';
+    }).join('');
+  }).join('');
+
+  var pagina = PAGINAS[chave];
+  document.title = pagina.titulo + ' — TeskBuy';
+  document.getElementById('info-corpo').innerHTML =
+    '<p class="eyebrow">' + ui.escapar(pagina.grupo) + '</p>' +
+    '<h1 style="margin-top:12px">' + ui.escapar(pagina.titulo) + '</h1>' +
+    '<div style="margin-top:18px">' + pagina.html + '</div>';
+})();
+</script>
+</body>
+</html>
