@@ -229,6 +229,15 @@
     },
   };
 
+  /* Logótipos dos meios de pagamento mostrados no rodapé, pela ordem indicada. */
+  var PAGAMENTOS = [
+    { ficheiro: 'multicaixa-express.png', nome: 'Multicaixa Express' },
+    { ficheiro: 'visa.png', nome: 'Visa' },
+    { ficheiro: 'mastercard.png', nome: 'MasterCard' },
+    { ficheiro: 'apple-pay.png', nome: 'Apple Pay' },
+    { ficheiro: 'google-pay.png', nome: 'Google Pay' },
+  ];
+
   var conteudoCache = null;
   var conteudoPedido = null;
 
@@ -306,9 +315,17 @@
             '<li><span class="silenciado">' + escapar(r.local) + '</span></li>' +
           '</ul></div>' +
         '</div>' +
-        '<div class="rodape-base">' +
-          '<p class="pagamentos">Pagamentos aceites: <b>Multicaixa Express</b> · <b>Transferência Bancária</b> · <b>Numerário</b></p>' +
-          '<p>Copyright ' + new Date().getFullYear() + ' TeskBuy. Todos os direitos reservados.</p>' +
+        '<div class="rodape-base" style="display:block">' +
+          '<p class="pagamentos">Pagamentos aceites</p>' +
+          '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px">' +
+            PAGAMENTOS.map(function (p) {
+              return '<img src="/assets/img/pagamentos/' + p.ficheiro + '" alt="' + escapar(p.nome) + '" ' +
+                'title="' + escapar(p.nome) + '" loading="lazy" ' +
+                'style="height:30px;width:auto;display:block;border-radius:5px">';
+            }).join('') +
+          '</div>' +
+          '<p style="margin-top:20px">Copyright ' + new Date().getFullYear() +
+            ' TeskBuy. Todos os direitos reservados.</p>' +
         '</div>' +
       '</div>';
   }
