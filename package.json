@@ -5,7 +5,9 @@
   "description": "TeskBuy — e-commerce angolano (Node.js + Express + Supabase), pronto para Vercel.",
   "license": "UNLICENSED",
   "type": "commonjs",
-  "engines": { "node": "22.x" },
+  "engines": {
+    "node": "22.x"
+  },
   "main": "index.js",
   "scripts": {
     "dev": "node server/index.js",
@@ -17,6 +19,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
+    "@vercel/analytics": "^2.0.1",
     "compression": "^1.7.4",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
