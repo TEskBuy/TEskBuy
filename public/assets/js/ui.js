@@ -230,12 +230,14 @@
   };
 
   /* Logótipos dos meios de pagamento mostrados no rodapé, pela ordem indicada. */
+  /* A altura é diferente de propósito: o Multicaixa é quadrado e os outros
+     são alongados. Com a mesma altura, os alongados pareciam bem maiores. */
   var PAGAMENTOS = [
-    { ficheiro: 'multicaixa-express.png', nome: 'Multicaixa Express' },
-    { ficheiro: 'visa.png', nome: 'Visa' },
-    { ficheiro: 'mastercard.png', nome: 'MasterCard' },
-    { ficheiro: 'apple-pay.png', nome: 'Apple Pay' },
-    { ficheiro: 'google-pay.png', nome: 'Google Pay' },
+    { ficheiro: 'multicaixa-express.png', nome: 'Multicaixa Express', altura: 26 },
+    { ficheiro: 'visa.png', nome: 'Visa', altura: 21 },
+    { ficheiro: 'mastercard.png', nome: 'MasterCard', altura: 21 },
+    { ficheiro: 'apple-pay.png', nome: 'Apple Pay', altura: 21 },
+    { ficheiro: 'google-pay.png', nome: 'Google Pay', altura: 21 },
   ];
 
   var conteudoCache = null;
@@ -321,7 +323,7 @@
             PAGAMENTOS.map(function (p) {
               return '<img src="/assets/img/pagamentos/' + p.ficheiro + '" alt="' + escapar(p.nome) + '" ' +
                 'title="' + escapar(p.nome) + '" loading="lazy" ' +
-                'style="height:26px;width:auto;display:block">';
+                'style="height:' + p.altura + 'px;width:auto;display:block">';
             }).join('') +
           '</div>' +
           '<p style="margin-top:20px">Copyright ' + new Date().getFullYear() +
