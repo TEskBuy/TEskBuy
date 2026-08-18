@@ -341,11 +341,11 @@
   /* A altura é diferente de propósito: o Multicaixa é quadrado e os outros
      são alongados. Com a mesma altura, os alongados pareciam bem maiores. */
   var PAGAMENTOS = [
-    { ficheiro: 'multicaixa-express.png', nome: 'Multicaixa Express', altura: 26 },
-    { ficheiro: 'visa.png', nome: 'Visa', altura: 21 },
-    { ficheiro: 'mastercard.png', nome: 'MasterCard', altura: 21 },
-    { ficheiro: 'apple-pay.png', nome: 'Apple Pay', altura: 21 },
-    { ficheiro: 'google-pay.png', nome: 'Google Pay', altura: 21 },
+    { ficheiro: 'multicaixa-express.png', nome: 'Multicaixa Express', altura: 19 },
+    { ficheiro: 'visa.png', nome: 'Visa', altura: 15 },
+    { ficheiro: 'mastercard.png', nome: 'MasterCard', altura: 15 },
+    { ficheiro: 'apple-pay.png', nome: 'Apple Pay', altura: 15 },
+    { ficheiro: 'google-pay.png', nome: 'Google Pay', altura: 15 },
   ];
 
   var conteudoCache = null;
@@ -425,9 +425,9 @@
 
         '<div class="rodape-grelha">' +
           '<div>' +
-            '<a class="logo" href="/" style="margin-bottom:14px"><img src="/assets/img/logo-full.png" alt="TeskBuy"></a>' +
-            '<p class="silenciado pequeno" style="max-width:300px">' + escapar(r.descricao) + '</p>' +
-            '<form class="rodape-newsletter" id="form-newsletter-rodape">' +
+            // sem logótipo nem descrição: o logótipo já está no cabeçalho
+            // e a descrição repetia o que a página inicial diz melhor
+            '<form class="rodape-newsletter" id="form-newsletter-rodape" style="margin-top:0">' +
               '<label for="email-newsletter">' + escapar(i.newsletter_titulo) + '</label>' +
               '<p class="silenciado pequeno">' + escapar(i.newsletter_texto) + '</p>' +
               '<div class="linha-flex" style="gap:8px;margin-top:10px">' +
