@@ -150,6 +150,7 @@
       { id: 'cupoes', nome: 'Cupões' },
     ];
     if (eu.papel === 'admin') itens.push({ id: 'utilizadores', nome: 'Utilizadores' });
+    if (eu.papel === 'admin') itens.push({ id: 'conteudo', nome: 'Conteúdo' });
 
     conteudo.innerHTML =
       '<div class="admin-grelha">' +
@@ -707,6 +708,210 @@
       }).catch(erroPainel);
   }
 
+  /* ── conteúdo do site ────────────────────────────────────────
+     Grava tudo numa única definição, "conteudo_site". O site lê essa
+     chave e, se faltar algum campo, usa o texto original. */
+  function verConteudo() {
+    esqueleto(2);
+
+    api.get('/catalogo/definicoes')
+      .then(function (r) {
+        var padrao = ui.CONTEUDO_PADRAO;
+        var gravado = (r.dados || {}).conteudo_site || {};
+        var gi = gravado.inicio || {};
+        var gr = gravado.rodape || {};
+
+        function ou(valor, alternativa) {
+          if (valor === undefined || valor === null || valor === '') return alternativa;
+          if (Array.isArray(valor) && !valor.length) return alternativa;
+          return valor;
+        }
+
+        desenharConteudo({
+          inicio: {
+            eyebrow: ou(gi.eyebrow, padrao.inicio.eyebrow),
+            titulo: ou(gi.titulo, padrao.inicio.titulo),
+            titulo_destaque: ou(gi.titulo_destaque, padrao.inicio.titulo_destaque),
+            intro: ou(gi.intro, padrao.inicio.intro),
+            botao1: ou(gi.botao1, padrao.inicio.botao1),
+            botao2: ou(gi.botao2, padrao.inicio.botao2),
+            slides: ou(gi.slides, padrao.inicio.slides),
+            confianca: ou(gi.confianca, padrao.inicio.confianca),
+            parceiros_titulo: ou(gi.parceiros_titulo, padrao.inicio.parceiros_titulo),
+            parceiros: ou(gi.parceiros, padrao.inicio.parceiros),
+            newsletter_titulo: ou(gi.newsletter_titulo, padrao.inicio.newsletter_titulo),
+            newsletter_texto: ou(gi.newsletter_texto, padrao.inicio.newsletter_texto),
+          },
+          rodape: {
+            descricao: ou(gr.descricao, padrao.rodape.descricao),
+            telefone: ou(gr.telefone, padrao.rodape.telefone),
+            email: ou(gr.email, padrao.rodape.email),
+            local: ou(gr.local, padrao.rodape.local),
+            facebook: ou(gr.facebook, padrao.rodape.facebook),
+            whatsapp: ou(gr.whatsapp, padrao.rodape.whatsapp),
+          },
+        });
+      })
+      .catch(erroPainel);
+  }
+
+  function campoTexto(id, etiqueta, valor, opcoes) {
+    opcoes = opcoes || {};
+    return '<div class="campo">' +
+      '<label for="' + id + '">' + etiqueta + '</label>' +
+      (opcoes.area
+        ? '<textarea id="' + id + '"' + (opcoes.linhas ? ' rows="' + opcoes.linhas + '"' : '') + '>' +
+            ui.escapar(valor || '') + '</textarea>'
+        : '<input id="' + id + '" value="' + ui.escapar(valor || '') + '">') +
+      (opcoes.ajuda ? '<span class="ajuda">' + opcoes.ajuda + '</span>' : '') +
+      '</div>';
+  }
+
+  function desenharConteudo(c) {
+    var i = c.inicio;
+    var r = c.rodape;
+
+    var htmlSlides = i.slides.map(function (s, n) {
+      return '<div class="cartao" style="margin-bottom:12px;background:rgba(238,247,248,.03)">' +
+        '<p class="mono pequeno silenciado" style="margin-bottom:12px">Slide ' + (n + 1) + '</p>' +
+        '<div class="campo-duplo">' +
+          campoTexto('sl-' + n + '-titulo', 'Título', s.titulo) +
+          campoTexto('sl-' + n + '-destaque', 'Parte destacada', s.destaque,
+            { ajuda: 'Aparece a laranja, a seguir ao título.' }) +
+        '</div>' +
+        campoTexto('sl-' + n + '-texto', 'Texto', s.texto, { area: true, linhas: 3 }) +
+        '<label class="opcao"><input type="checkbox" id="sl-' + n + '-contactos"' +
+          (s.mostrar_contactos ? ' checked' : '') + '>' +
+          '<span><strong>Mostrar telefone e e-mail neste slide</strong>' +
+          '<span>Usa os contactos definidos no rodapé.</span></span></label>' +
+      '</div>';
+    }).join('');
+
+    var htmlConfianca = i.confianca.map(function (x, n) {
+      return '<div class="cartao" style="margin-bottom:12px;background:rgba(238,247,248,.03)">' +
+        '<p class="mono pequeno silenciado" style="margin-bottom:12px">Cartão ' + (n + 1) + '</p>' +
+        campoTexto('cf-' + n + '-titulo', 'Título', x.titulo) +
+        campoTexto('cf-' + n + '-texto', 'Texto', x.texto, { area: true, linhas: 2 }) +
+      '</div>';
+    }).join('');
+
+    document.getElementById('painel-admin').innerHTML =
+      '<h1 style="margin-bottom:4px">Conteúdo do site</h1>' +
+      '<p class="silenciado pequeno" style="margin-bottom:20px">' +
+        'Os textos da página inicial e do rodapé. Guarde e recarregue a loja para ver o resultado.</p>' +
+
+      '<div class="cartao" style="margin-bottom:16px">' +
+        '<h3 style="margin-bottom:16px">Cabeçalho da página inicial</h3>' +
+        campoTexto('in-eyebrow', 'Linha pequena de cima', i.eyebrow) +
+        '<div class="campo-duplo">' +
+          campoTexto('in-titulo', 'Título', i.titulo) +
+          campoTexto('in-destaque', 'Segunda linha (a laranja)', i.titulo_destaque) +
+        '</div>' +
+        campoTexto('in-intro', 'Parágrafo de introdução', i.intro, { area: true, linhas: 3 }) +
+        '<div class="campo-duplo">' +
+          campoTexto('in-botao1', 'Botão principal', i.botao1) +
+          campoTexto('in-botao2', 'Botão secundário', i.botao2) +
+        '</div>' +
+      '</div>' +
+
+      '<div class="cartao" style="margin-bottom:16px">' +
+        '<h3 style="margin-bottom:16px">Painel rotativo</h3>' + htmlSlides +
+      '</div>' +
+
+      '<div class="cartao" style="margin-bottom:16px">' +
+        '<h3 style="margin-bottom:16px">Cartões de confiança</h3>' +
+        '<p class="pequeno silenciado" style="margin-bottom:14px">Os ícones são fixos; só os textos mudam.</p>' +
+        htmlConfianca +
+      '</div>' +
+
+      '<div class="cartao" style="margin-bottom:16px">' +
+        '<h3 style="margin-bottom:16px">Faixa de parceiros e newsletter</h3>' +
+        campoTexto('in-parc-titulo', 'Título da faixa', i.parceiros_titulo) +
+        campoTexto('in-parceiros', 'Parceiros', i.parceiros.join('\n'),
+          { area: true, linhas: 4, ajuda: 'Um por linha.' }) +
+        campoTexto('in-news-titulo', 'Título da newsletter', i.newsletter_titulo) +
+        campoTexto('in-news-texto', 'Texto da newsletter', i.newsletter_texto, { area: true, linhas: 2 }) +
+      '</div>' +
+
+      '<div class="cartao" style="margin-bottom:16px">' +
+        '<h3 style="margin-bottom:16px">Rodapé</h3>' +
+        campoTexto('rd-descricao', 'Descrição da loja', r.descricao, { area: true, linhas: 3 }) +
+        '<div class="campo-duplo">' +
+          campoTexto('rd-telefone', 'Telefone', r.telefone) +
+          campoTexto('rd-email', 'E-mail', r.email) +
+        '</div>' +
+        campoTexto('rd-local', 'Localidade', r.local) +
+        '<div class="campo-duplo">' +
+          campoTexto('rd-facebook', 'Endereço do Facebook', r.facebook) +
+          campoTexto('rd-whatsapp', 'Endereço do WhatsApp', r.whatsapp) +
+        '</div>' +
+      '</div>' +
+
+      '<div class="linha-flex" style="margin-bottom:40px">' +
+        '<button class="btn btn-principal" id="guardar-conteudo">Guardar conteúdo</button>' +
+        '<a class="btn btn-secundario" href="/" target="_blank" rel="noopener">Ver a loja</a>' +
+      '</div>' +
+      '<div id="erro-conteudo"></div>';
+
+    document.getElementById('guardar-conteudo').addEventListener('click', function (ev) {
+      var btn = ev.currentTarget;
+      var alvo = document.getElementById('erro-conteudo');
+      alvo.innerHTML = '';
+      btn.disabled = true;
+      btn.textContent = 'A guardar…';
+
+      function v(id) { return document.getElementById(id).value.trim(); }
+
+      var corpo = {
+        inicio: {
+          eyebrow: v('in-eyebrow'),
+          titulo: v('in-titulo'),
+          titulo_destaque: v('in-destaque'),
+          intro: v('in-intro'),
+          botao1: v('in-botao1'),
+          botao2: v('in-botao2'),
+          slides: i.slides.map(function (_, n) {
+            return {
+              titulo: v('sl-' + n + '-titulo'),
+              destaque: v('sl-' + n + '-destaque'),
+              texto: v('sl-' + n + '-texto'),
+              mostrar_contactos: document.getElementById('sl-' + n + '-contactos').checked,
+            };
+          }),
+          confianca: i.confianca.map(function (_, n) {
+            return { titulo: v('cf-' + n + '-titulo'), texto: v('cf-' + n + '-texto') };
+          }),
+          parceiros_titulo: v('in-parc-titulo'),
+          parceiros: v('in-parceiros').split('\n')
+            .map(function (l) { return l.trim(); })
+            .filter(Boolean),
+          newsletter_titulo: v('in-news-titulo'),
+          newsletter_texto: v('in-news-texto'),
+        },
+        rodape: {
+          descricao: v('rd-descricao'),
+          telefone: v('rd-telefone'),
+          email: v('rd-email'),
+          local: v('rd-local'),
+          facebook: v('rd-facebook'),
+          whatsapp: v('rd-whatsapp'),
+        },
+      };
+
+      api.put('/admin/definicoes/conteudo_site', corpo)
+        .then(function () {
+          btn.disabled = false;
+          btn.textContent = 'Guardar conteúdo';
+          ui.notificar('Conteúdo guardado. Recarregue a loja para ver.', 'ok');
+        })
+        .catch(function (e) {
+          btn.disabled = false;
+          btn.textContent = 'Guardar conteúdo';
+          alvo.innerHTML = '<div class="aviso aviso-erro">' + ui.escapar(e.message) + '</div>';
+        });
+    });
+  }
+
   /* ── paginação partilhada ────────────────────────────────── */
   function paginador(p, filtros) {
     if (!p || p.paginas <= 1) return '';
@@ -740,6 +945,7 @@
     if (vista === 'stock') return verStock();
     if (vista === 'cupoes') return verCupoes();
     if (vista === 'utilizadores' && eu.papel === 'admin') return verUtilizadores();
+    if (vista === 'conteudo' && eu.papel === 'admin') return verConteudo();
     return verPainel();
   }
 
