@@ -71,6 +71,10 @@ async function entrar({ email, palavra_passe }) {
   const { data, error } = await publico.auth.signInWithPassword({ email, password: palavra_passe });
   if (error) throw erros.naoAutenticado(traduz(error.message));
 
+  // Cliente ligado à sessão recém-criada. É preciso declará-lo aqui: neste ponto
+  // do pedido ainda não existe sessão no contexto, por isso db() não serve.
+  const sessao = comUtilizador(data.session.access_token);
+
   const { data: perfil } = await db()
     .from('profiles')
     .select('full_name, phone, role, avatar_url, is_active')
