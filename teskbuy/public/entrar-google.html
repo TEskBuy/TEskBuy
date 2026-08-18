@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A entrar com a Google — TeskBuy</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" type="image/png" href="/assets/img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/teskbuy.css?v=20260818">
+<style>
+  .espera{
+    min-height:70vh; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:18px; text-align:center;
+  }
+  .espera img{ height:40px; }
+  .roda{
+    width:32px; height:32px; border-radius:50%;
+    border:3px solid rgba(238,247,248,0.18); border-top-color: var(--orange);
+    animation: rodar .8s linear infinite;
+  }
+  @keyframes rodar{ to{ transform: rotate(360deg); } }
+  .espera p{ color: var(--ink-dim); }
+  .espera .caixa-erro{ width:min(430px, 92vw); }
+</style>
+</head>
+<body>
+<div class="bg-glow"></div><div class="route-lines"></div>
+
+<main class="env espera" id="espera">
+  <img src="/assets/img/logo-full.png" alt="TeskBuy">
+  <div class="roda" id="roda"></div>
+  <p id="estado">A concluir a entrada com a Google…</p>
+  <div class="caixa-erro" id="caixa-erro"></div>
+</main>
+
+<script src="/assets/js/api.js?v=20260818"></script>
+<script src="/assets/js/estado.js?v=20260818"></script>
+<script src="/assets/js/ui.js?v=20260818"></script>
+<script>
+(function () {
+  'use strict';
+  var api = window.TBApi, ui = window.TBUI;
+
+  var estado = document.getElementById('estado');
+  var roda = document.getElementById('roda');
+  var caixaErro = document.getElementById('caixa-erro');
+
+  /* Para onde voltar: guardámos antes de sair para a Google. */
+  function destino() {
+    var voltar;
+    try { voltar = sessionStorage.getItem('tb.voltar'); } catch (e) { voltar = null; }
+    try { sessionStorage.removeItem('tb.voltar'); } catch (e) { /* nada */ }
+    return voltar && voltar.charAt(0) === '/' ? voltar : '/';
+  }
+
+  function falhar(mensagem) {
+    roda.style.display = 'none';
+    estado.textContent = 'Não foi possível entrar com a Google.';
+    caixaErro.innerHTML =
+      '<div class="aviso aviso-erro" style="margin:14px 0 18px">' + ui.escapar(mensagem) + '</div>' +
+      '<a class="btn btn-principal btn-largo" href="/entrar">Voltar a entrar</a>';
+  }
+
+  /* O Supabase devolve os tokens no fragmento (#), que nunca chega ao servidor. */
+  var frag = new URLSearchParams(location.hash.replace(/^#/, ''));
+  var procura = new URLSearchParams(location.search);
+
+  var erro = frag.get('error_description') || frag.get('error') ||
+             procura.get('error_description') || procura.get('error');
+  if (erro) {
+    falhar(decodeURIComponent(String(erro).replace(/\+/g, ' ')));
+    return;
+  }
+
+  var acesso = frag.get('access_token');
+  var renovacao = frag.get('refresh_token');
+  if (!acesso || !renovacao) {
+    falhar(
+      procura.get('code')
+        ? 'A resposta veio num formato que não conseguimos usar. Confirme no Supabase, em ' +
+          'Authentication → URL Configuration, que este endereço está na lista de Redirect URLs.'
+        : 'A Google não devolveu a informação necessária. Tente novamente.'
+    );
+    return;
+  }
+
+  // Limpa os tokens da barra de endereço antes de qualquer outra coisa.
+  history.replaceState(null, '', location.pathname);
+
+  api.post('/auth/sessao-google', {
+    access_token: acesso,
+    refresh_token: renovacao,
+    expira_em: frag.get('expires_at') || undefined,
+  })
+    .then(function (r) {
+      api.sessao.guardar(r.dados.sessao);
+      api.utilizador.guardar(r.dados.utilizador);
+      estado.textContent = 'Entrou. A abrir a loja…';
+      return ui.sincronizarAposLogin();
+    })
+    .then(function () { location.replace(destino()); })
+    .catch(function (e) { falhar(e.message || 'Tente novamente dentro de instantes.'); });
+})();
+</script>
+</body>
+</html>

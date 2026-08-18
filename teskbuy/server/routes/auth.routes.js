@@ -10,6 +10,8 @@ router.post('/registar', limiteAutenticacao, validar({ body: e.registo }), c.reg
 router.post('/entrar', limiteAutenticacao, validar({ body: e.login }), c.entrar);
 router.post('/confirmar', limiteAutenticacao, validar({ body: e.confirmacaoCodigo }), c.confirmar);
 router.post('/reenviar-codigo', limiteAutenticacao, validar({ body: e.reenvioCodigo }), c.reenviar);
+router.get('/google', limiteAutenticacao, c.google);
+router.post('/sessao-google', limiteAutenticacao, validar({ body: e.sessaoGoogle }), c.sessaoGoogle);
 router.post('/sair', c.sair);
 router.post('/renovar', c.renovar);
 router.get('/eu', exigirSessao, c.eu);

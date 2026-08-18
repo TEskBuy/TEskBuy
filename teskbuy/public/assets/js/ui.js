@@ -216,7 +216,7 @@
       if (ev.key === 'Escape' && nav.classList.contains('aberta')) menu(false);
     });
     window.addEventListener('resize', function () {
-      if (window.innerWidth > 780 && nav.classList.contains('aberta')) menu(false);
+      if (window.innerWidth > 1120 && nav.classList.contains('aberta')) menu(false);
     });
 
     // contactos reais do painel, assim que chegarem
@@ -341,11 +341,11 @@
   /* A altura é diferente de propósito: o Multicaixa é quadrado e os outros
      são alongados. Com a mesma altura, os alongados pareciam bem maiores. */
   var PAGAMENTOS = [
-    { ficheiro: 'multicaixa-express.png', nome: 'Multicaixa Express', altura: 26 },
-    { ficheiro: 'visa.png', nome: 'Visa', altura: 21 },
-    { ficheiro: 'mastercard.png', nome: 'MasterCard', altura: 21 },
-    { ficheiro: 'apple-pay.png', nome: 'Apple Pay', altura: 21 },
-    { ficheiro: 'google-pay.png', nome: 'Google Pay', altura: 21 },
+    { ficheiro: 'multicaixa-express.png', nome: 'Multicaixa Express', altura: 19 },
+    { ficheiro: 'visa.png', nome: 'Visa', altura: 15 },
+    { ficheiro: 'mastercard.png', nome: 'MasterCard', altura: 15 },
+    { ficheiro: 'apple-pay.png', nome: 'Apple Pay', altura: 15 },
+    { ficheiro: 'google-pay.png', nome: 'Google Pay', altura: 15 },
   ];
 
   var conteudoCache = null;
@@ -425,9 +425,9 @@
 
         '<div class="rodape-grelha">' +
           '<div>' +
-            '<a class="logo" href="/" style="margin-bottom:14px"><img src="/assets/img/logo-full.png" alt="TeskBuy"></a>' +
-            '<p class="silenciado pequeno" style="max-width:300px">' + escapar(r.descricao) + '</p>' +
-            '<form class="rodape-newsletter" id="form-newsletter-rodape">' +
+            // sem logótipo nem descrição: o logótipo já está no cabeçalho
+            // e a descrição repetia o que a página inicial diz melhor
+            '<form class="rodape-newsletter" id="form-newsletter-rodape" style="margin-top:0">' +
               '<label for="email-newsletter">' + escapar(i.newsletter_titulo) + '</label>' +
               '<p class="silenciado pequeno">' + escapar(i.newsletter_texto) + '</p>' +
               '<div class="linha-flex" style="gap:8px;margin-top:10px">' +
@@ -688,7 +688,49 @@
   }
 
   /* ── arranque comum ─────────────────────────────────────── */
+  /**
+   * Rede de segurança da entrada com a Google.
+   *
+   * Quando o endereço de regresso não está na lista de "Redirect URLs" do
+   * Supabase, ele não dá erro: manda o cliente para o Site URL — normalmente a
+   * página inicial — com os tokens no fim do endereço (#access_token=…).
+   * Sem isto, o cliente autenticava-se na Google e voltava à loja como se nada
+   * fosse. Aqui apanhamos esses tokens em qualquer página e concluímos a entrada.
+   */
+  function capturarSessaoDoEndereco() {
+    if (!location.hash || location.hash.indexOf('access_token') === -1) return false;
+
+    var frag = new URLSearchParams(location.hash.replace(/^#/, ''));
+    var acesso = frag.get('access_token');
+    var renovacao = frag.get('refresh_token');
+    if (!acesso || !renovacao) return false;
+
+    // a recuperação de palavra-passe tem página própria — não lhe tocamos
+    if (frag.get('type') === 'recovery') return false;
+    if (/nova-palavra-passe|entrar-google/.test(location.pathname)) return false;
+
+    history.replaceState(null, '', location.pathname + location.search);
+
+    api.post('/auth/sessao-google', {
+      access_token: acesso,
+      refresh_token: renovacao,
+      expira_em: frag.get('expires_at') || undefined,
+    })
+      .then(function (r) {
+        api.sessao.guardar(r.dados.sessao);
+        api.utilizador.guardar(r.dados.utilizador);
+        return sincronizarAposLogin();
+      })
+      .then(function () { location.reload(); })
+      .catch(function (e) {
+        notificar(e.message || 'Não foi possível concluir a entrada com a Google.', 'erro');
+      });
+
+    return true;
+  }
+
   function iniciar(paginaActiva) {
+    capturarSessaoDoEndereco();
     cabecalho(paginaActiva);
     rodape();
     estado.aoMudar(actualizarCrachas);

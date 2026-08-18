@@ -36,6 +36,13 @@ const reenvioCodigo = z.object({
   email: z.string().trim().toLowerCase().email('Indique um e-mail válido.'),
 });
 
+// Tokens que a Google devolve, através do Supabase, no fim do consentimento.
+const sessaoGoogle = z.object({
+  access_token: z.string().trim().min(20, 'Falta o token de acesso.').max(4000),
+  refresh_token: z.string().trim().min(10, 'Falta o token de renovação.').max(4000),
+  expira_em: z.coerce.number().int().positive().optional(),
+});
+
 const novaPalavraPasse = z.object({
   palavra_passe: z.string().min(8, 'A palavra-passe deve ter pelo menos 8 caracteres.').max(72),
 });
@@ -197,7 +204,7 @@ const paramsProdutoId = z.object({ produtoId: uuid });
 
 module.exports = {
   registo, login, recuperacao, novaPalavraPasse, alteracaoPalavraPasse,
-  confirmacaoCodigo, reenvioCodigo,
+  confirmacaoCodigo, reenvioCodigo, sessaoGoogle,
   listagemProdutos, criarProduto, actualizarProduto, categoria, avaliacao,
   adicionarAoCarrinho, actualizarItemCarrinho, sincronizarCarrinho,
   criarEncomenda, estadoEncomenda, perfil, morada,
