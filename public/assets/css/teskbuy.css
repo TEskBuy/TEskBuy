@@ -126,18 +126,49 @@ main{ position:relative; z-index:2; flex:1; padding-bottom:64px; }
 }
 .nav a:hover, .nav a.activo{ color: var(--ink); background: rgba(238,247,248,0.07); }
 
-.procura{ flex:1; position:relative; max-width:420px; margin-left:auto; }
-.procura input{
-  width:100%; padding:10px 14px 10px 38px;
+.procura{
+  flex:1; min-width:0; position:relative; max-width:430px; margin-left:auto;
+  display:flex; align-items:center;
   background: rgba(238,247,248,0.05);
   border:1px solid var(--linha); border-radius:999px;
+}
+.procura:focus-within{ border-color: var(--orange); background: rgba(238,247,248,0.08); }
+.procura input{
+  flex:1; min-width:0; padding:10px 12px 10px 38px;
+  background:transparent; border:none;
   color: var(--ink); font-family:inherit; font-size:14px;
 }
 .procura input::placeholder{ color: rgba(185,211,214,0.6); }
-.procura input:focus{ outline:none; border-color: var(--orange); background: rgba(238,247,248,0.08); }
+.procura input:focus{ outline:none; }
 .procura svg{ position:absolute; left:14px; top:50%; transform:translateY(-50%); width:15px; height:15px; color: var(--ink-dim); }
 
+/* selector de categorias dentro da barra de procura */
+.procura select{
+  flex-shrink:0; max-width:158px;
+  padding:10px 30px 10px 14px; margin:0;
+  background:transparent; border:none; border-left:1px solid var(--linha);
+  color: var(--ink-dim); font-family:inherit; font-size:13.5px; cursor:pointer;
+  appearance:none; border-radius:0 999px 999px 0;
+  background-image:linear-gradient(45deg,transparent 50%,var(--ink-dim) 50%),linear-gradient(135deg,var(--ink-dim) 50%,transparent 50%);
+  background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;
+  background-size:5px 5px,5px 5px; background-repeat:no-repeat;
+}
+.procura select:focus{ outline:none; color: var(--ink); }
+.procura select option{ background: var(--teal-deep); color: var(--ink); }
+
 .accoes{ display:flex; align-items:center; gap:6px; flex-shrink:0; }
+
+/* "Entrar / Criar conta" em texto, no lugar do ícone de utilizador */
+.conta-texto{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:6px 12px; border-radius:999px; text-decoration:none;
+  color: var(--ink-dim); transition: color .2s, background .2s;
+}
+.conta-texto:hover{ color: var(--ink); background: rgba(238,247,248,0.07); }
+.conta-texto svg{ width:19px; height:19px; flex-shrink:0; }
+.conta-texto span{ display:flex; flex-direction:column; line-height:1.15; }
+.conta-texto small{ font-size:11px; color: var(--ink-dim); }
+.conta-texto b{ font-size:13.5px; font-weight:600; color: var(--ink); white-space:nowrap; }
 .icone-btn{
   position:relative; display:inline-flex; align-items:center; justify-content:center;
   width:40px; height:40px; border-radius:50%;
@@ -339,7 +370,32 @@ tbody tr:hover{ background: rgba(238,247,248,0.03); }
   border-top:1px solid var(--linha); background: rgba(6,44,55,0.5);
   padding: 44px 0 26px; margin-top:auto;
 }
-.rodape-grelha{ display:grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap:32px; margin-bottom:32px; }
+.rodape-grelha{ display:grid; grid-template-columns: 1.6fr repeat(4, 1fr); gap:26px; margin-bottom:32px; }
+
+/* faixa de confiança, por cima das colunas — aparece em todas as páginas */
+.rodape-confianca{
+  display:grid; grid-template-columns: repeat(auto-fit, minmax(215px,1fr)); gap:20px;
+  padding-bottom:30px; margin-bottom:30px; border-bottom:1px solid var(--linha);
+}
+.rodape-confianca > div{ display:flex; gap:12px; align-items:flex-start; }
+.rodape-confianca svg{ width:22px; height:22px; color: var(--orange); flex-shrink:0; margin-top:2px; }
+.rodape-confianca strong{ display:block; font-size:14.5px; font-family:'Space Grotesk',sans-serif; color: var(--ink); }
+.rodape-confianca span{ font-size:13px; color: var(--ink-dim); }
+
+/* subscrição da newsletter, dentro do rodapé */
+.rodape-newsletter{ margin-top:20px; }
+.rodape-newsletter label{
+  display:block; font-family:'IBM Plex Mono',monospace; font-size:11px; letter-spacing:0.1em;
+  text-transform:uppercase; color: var(--sand); margin-bottom:6px;
+}
+.rodape-newsletter input{
+  flex:1; min-width:140px; padding:10px 14px; border-radius:999px;
+  border:1px solid var(--linha-forte); background: rgba(6,48,60,0.5);
+  color: var(--ink); font-family:inherit; font-size:14px;
+}
+.rodape-newsletter input::placeholder{ color: rgba(185,211,214,0.5); }
+.rodape-newsletter input:focus{ outline:none; border-color: var(--orange); }
+
 .rodape h4{ font-size:13px; letter-spacing:0.1em; text-transform:uppercase; color: var(--sand); margin-bottom:14px; font-family:'IBM Plex Mono',monospace; font-weight:500; }
 .rodape ul{ list-style:none; display:flex; flex-direction:column; gap:9px; }
 .rodape a{ color: var(--ink-dim); text-decoration:none; font-size:14px; }
@@ -372,10 +428,21 @@ tbody tr:hover{ background: rgba(238,247,248,0.03); }
 .centro{ text-align:center; }
 
 /* ── responsivo ──────────────────────────────────────────── */
+@media (max-width: 1180px){
+  /* deixa de haver espaço para o texto da conta ao lado do menu */
+  .conta-texto span{ display:none; }
+  .conta-texto{ padding:6px; }
+}
+@media (max-width: 1080px){
+  .rodape-grelha{ grid-template-columns: 1.4fr repeat(2, 1fr); gap:24px; }
+}
 @media (max-width: 900px){
   .rodape-grelha{ grid-template-columns: 1fr 1fr; gap:26px; }
 }
 @media (max-width: 780px){
+  /* no telemóvel só fica o ícone da conta, para não roubar espaço */
+  .conta-texto span{ display:none; }
+  .conta-texto{ padding:6px; }
   .nav{
     position:fixed; inset: var(--cabecalho-altura) 0 auto 0;
     flex-direction:column; align-items:stretch; gap:0;
@@ -386,7 +453,18 @@ tbody tr:hover{ background: rgba(238,247,248,0.03); }
   .nav a{ padding:13px 8px; border-radius:0; border-bottom:1px solid rgba(238,247,248,0.06); }
   .menu-btn{ display:inline-flex; order:-1; }
   .procura{ order:5; flex-basis:100%; max-width:none; display:none; }
-  .procura.aberta{ display:block; position:absolute; top:var(--cabecalho-altura); left:0; right:0; padding:12px 4vw; background:var(--teal-deep); border-bottom:1px solid var(--linha); }
+  .procura.aberta{
+    display:flex; flex-wrap:wrap; position:absolute; top:var(--cabecalho-altura);
+    left:0; right:0; margin:0; border-radius:0;
+    background:var(--teal-deep); border:none; border-bottom:1px solid var(--linha);
+  }
+  .procura.aberta input{ flex-basis:100%; padding-left:38px; }
+  .procura.aberta svg{ top:22px; }
+  .procura.aberta select{
+    flex-basis:100%; max-width:none; border-left:none;
+    border-top:1px solid var(--linha); border-radius:0;
+    background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;
+  }
   .cabecalho-int{ position:relative; }
 }
 @media (max-width: 560px){
