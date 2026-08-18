@@ -5,14 +5,99 @@
 
   ui.iniciar('inicio');
 
-  /* slider do herói */
-  (function slider() {
+  /* ── textos editáveis pelo painel ────────────────────────────
+     Enquanto não chegam, ficam à vista os textos que estão no HTML.
+     Assim a página nunca aparece vazia, mesmo sem ligação. */
+  ui.conteudo(function (c) {
+    var i = c.inicio;
+    var r = c.rodape;
+
+    function definir(id, texto) {
+      var el = document.getElementById(id);
+      if (el && texto) el.textContent = texto;
+    }
+
+    definir('c-eyebrow', i.eyebrow);
+    definir('c-intro', i.intro);
+    definir('c-botao1', i.botao1);
+    definir('c-botao2', i.botao2);
+    definir('c-parceiros-titulo', i.parceiros_titulo);
+    definir('c-news-titulo', i.newsletter_titulo);
+    definir('c-news-texto', i.newsletter_texto);
+
+    var titulo = document.getElementById('c-titulo');
+    if (titulo) {
+      titulo.innerHTML = ui.escapar(i.titulo) +
+        (i.titulo_destaque ? '<br><span class="accent">' + ui.escapar(i.titulo_destaque) + '</span>' : '');
+    }
+
+    desenharSlides(i.slides, r);
+    desenharConfianca(i.confianca);
+    desenharParceiros(i.parceiros);
+    iniciarSlider();
+  });
+
+  function desenharSlides(slides, rodape) {
+    var alvo = document.getElementById('slider');
+    if (!alvo || !slides || !slides.length) return;
+
+    var telefoneLimpo = String(rodape.telefone || '').replace(/[^0-9+]/g, '');
+
+    alvo.innerHTML = slides.map(function (s, indice) {
+      return '<article class="slide' + (indice === 0 ? ' activo' : '') + '">' +
+        '<h2>' + ui.escapar(s.titulo) +
+          (s.destaque ? ' <span class="accent">' + ui.escapar(s.destaque) + '</span>' : '') + '</h2>' +
+        '<p>' + ui.escapar(s.texto) + '</p>' +
+        (s.mostrar_contactos
+          ? '<div class="linha-flex mono" style="margin-top:12px;font-size:14px;color:var(--sand)">' +
+              '<a href="tel:' + ui.escapar(telefoneLimpo) + '" style="text-decoration:none;' +
+                'border-bottom:1px solid rgba(245,234,217,.35)">' + ui.escapar(rodape.telefone) + '</a>' +
+              '<a href="mailto:' + ui.escapar(rodape.email) + '" style="text-decoration:none;' +
+                'border-bottom:1px solid rgba(245,234,217,.35)">' + ui.escapar(rodape.email) + '</a>' +
+            '</div>'
+          : '') +
+      '</article>';
+    }).join('');
+  }
+
+  function desenharConfianca(cartoes) {
+    var alvo = document.getElementById('confianca');
+    if (!alvo || !cartoes || !cartoes.length) return;
+
+    var icones = [ui.ico.escudo, ui.ico.camiao, ui.ico.cartao, ui.ico.estrela];
+
+    alvo.innerHTML = cartoes.map(function (c, indice) {
+      return '<div>' + icones[indice % icones.length] +
+        '<div><strong>' + ui.escapar(c.titulo) + '</strong>' +
+        '<span>' + ui.escapar(c.texto) + '</span></div></div>';
+    }).join('');
+  }
+
+  function desenharParceiros(nomes) {
+    var faixa = document.getElementById('c-faixa-parceiros');
+    if (!faixa || !nomes || !nomes.length) return;
+
+    // remove só as pastilhas, mantendo o título da faixa
+    Array.prototype.slice.call(faixa.querySelectorAll('span')).forEach(function (s) {
+      s.parentNode.removeChild(s);
+    });
+
+    nomes.forEach(function (nome) {
+      var span = document.createElement('span');
+      span.textContent = nome;
+      faixa.appendChild(span);
+    });
+  }
+
+  function iniciarSlider() {
     var slides = document.querySelectorAll('.slide');
     var pontos = document.getElementById('pontos');
     if (!slides.length || !pontos) return;
+
+    pontos.innerHTML = '';
     var actual = 0;
 
-    slides.forEach(function (_, i) {
+    Array.prototype.slice.call(slides).forEach(function (_, i) {
       var b = document.createElement('button');
       b.type = 'button';
       b.setAttribute('aria-label', 'Ver mensagem ' + (i + 1));
@@ -33,22 +118,9 @@
     if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       setInterval(function () { irPara((actual + 1) % slides.length); }, 5500);
     }
-  })();
+  }
 
-  /* faixa de confiança */
-  document.getElementById('confianca').innerHTML =
-    [
-      { i: ui.ico.escudo, t: 'Qualidade verificada', s: 'Cada artigo é testado antes de sair do armazém.' },
-      { i: ui.ico.camiao, t: 'Entrega em Angola', s: '24 a 48 horas em Luanda, 3 a 7 dias nas províncias.' },
-      { i: ui.ico.cartao, t: 'Pague à sua maneira', s: 'Multicaixa Express, transferência ou numerário.' },
-      { i: ui.ico.estrela, t: 'Novos e usados', s: 'Usados com estado descrito com honestidade.' },
-    ]
-      .map(function (c) {
-        return '<div>' + c.i + '<div><strong>' + c.t + '</strong><span>' + c.s + '</span></div></div>';
-      })
-      .join('');
-
-  /* categorias */
+  /* ── categorias ─────────────────────────────────────────── */
   api.get('/catalogo/categorias')
     .then(function (r) {
       document.getElementById('categorias').innerHTML = r.dados
@@ -67,7 +139,7 @@
         '<p class="silenciado">Não foi possível carregar as categorias. Actualize a página.</p>';
     });
 
-  /* listas de produtos */
+  /* ── listas de produtos ─────────────────────────────────── */
   function carregarGrelha(elementoId, params, vazio) {
     var alvo = document.getElementById(elementoId);
     alvo.innerHTML = ui.esqueletos(4);
@@ -91,7 +163,7 @@
   carregarGrelha('destaques', { destaque: 'true', limite: 8 }, 'Ainda sem destaques.');
   carregarGrelha('novidades', { ordenar: 'recentes', limite: 8 }, 'Ainda sem novidades.');
 
-  /* newsletter */
+  /* ── newsletter ─────────────────────────────────────────── */
   document.getElementById('form-newsletter').addEventListener('submit', function (ev) {
     ev.preventDefault();
     var input = ev.target.querySelector('input');
