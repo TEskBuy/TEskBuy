@@ -89,6 +89,54 @@ async function entrar({ email, palavra_passe }) {
   return formatarSessao(data.session, data.user, perfil);
 }
 
+/** Traduz os erros próprios da confirmação por código de 6 dígitos. */
+function traduzCodigo(mensagem = '') {
+  const m = mensagem.toLowerCase();
+  if (m.includes('expired') || m.includes('invalid')) {
+    return 'Código inválido ou expirado. Peça um código novo.';
+  }
+  if (m.includes('rate limit') || m.includes('too many')) {
+    return 'Demasiados pedidos. Aguarde um minuto antes de tentar outra vez.';
+  }
+  return mensagem || 'Não foi possível confirmar o código.';
+}
+
+/**
+ * Confirma a conta com o código de 6 dígitos enviado por e-mail.
+ * Em caso de sucesso o cliente fica com sessão iniciada de imediato.
+ */
+async function confirmarCodigo({ email, codigo }) {
+  const { data, error } = await publico.auth.verifyOtp({
+    email,
+    token: codigo,
+    type: 'signup',
+  });
+  if (error) throw erros.pedidoInvalido(traduzCodigo(error.message));
+  if (!data?.session) throw erros.pedidoInvalido('Código inválido ou expirado. Peça um código novo.');
+
+  const sessao = comUtilizador(data.session.access_token);
+
+  const { data: perfil } = await sessao
+    .from('profiles')
+    .select('full_name, phone, role, avatar_url, is_active')
+    .eq('id', data.user.id)
+    .maybeSingle();
+
+  if (perfil && perfil.is_active === false) {
+    throw erros.semPermissao('Esta conta está suspensa. Contacte a TeskBuy pelo +244 943 277 184.');
+  }
+
+  await sessao.from('profiles').update({ last_seen_at: new Date().toISOString() }).eq('id', data.user.id);
+  return formatarSessao(data.session, data.user, perfil);
+}
+
+/** Envia novamente o código de confirmação para o mesmo e-mail. */
+async function reenviarCodigo(email) {
+  const { error } = await publico.auth.resend({ type: 'signup', email });
+  if (error) throw erros.pedidoInvalido(traduzCodigo(error.message));
+  return { enviado: true };
+}
+
 async function sair(token) {
   if (!token) return { terminada: true };
   // Invalida o refresh token no Supabase; a sessão local é limpa pelo frontend.
@@ -136,4 +184,5 @@ async function alterarPalavraPasse(accessToken, actual, nova, email) {
 module.exports = {
   registar, entrar, sair, renovar, pedirRecuperacao,
   definirNovaPalavraPasse, alterarPalavraPasse, formatarSessao,
+  confirmarCodigo, reenviarCodigo,
 };
