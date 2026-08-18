@@ -138,7 +138,10 @@
         '</nav>' +
         '<form class="procura" id="form-procura" role="search">' +
           ico.procurar +
-          '<input type="search" name="q" id="campo-procura" placeholder="Procurar telemóveis, portáteis, livros…" aria-label="Procurar na loja">' +
+          '<input type="search" name="q" id="campo-procura" placeholder="Procurar produtos…" aria-label="Procurar na loja">' +
+          '<select id="procura-categoria" aria-label="Categoria a procurar">' +
+            '<option value="">Categorias</option>' +
+          '</select>' +
         '</form>' +
         '<div class="accoes">' +
           '<button class="icone-btn" id="btn-procura-movel" aria-label="Procurar">' + ico.procurar + '</button>' +
@@ -146,8 +149,12 @@
             '<span class="crachas" id="crachas-favoritos"></span></a>' +
           '<a class="icone-btn" href="/carrinho" aria-label="Carrinho">' + ico.carrinho +
             '<span class="crachas" id="crachas-carrinho"></span></a>' +
-          '<a class="icone-btn" href="' + (u ? '/conta' : '/entrar') + '" aria-label="' + (u ? 'A minha conta' : 'Entrar') + '">' +
-            ico.conta + '</a>' +
+          (u
+            ? '<a class="conta-texto" href="/conta">' + ico.conta +
+                '<span><small>A minha conta</small><b>' +
+                escapar(String(u.nome || u.email || '').split(' ')[0] || 'Conta') + '</b></span></a>'
+            : '<a class="conta-texto" href="/entrar">' + ico.conta +
+                '<span><small>Entrar</small><b>Criar conta</b></span></a>') +
         '</div>' +
       '</div>';
 
@@ -162,10 +169,26 @@
     var params = new URLSearchParams(location.search);
     if (params.get('q')) document.getElementById('campo-procura').value = params.get('q');
 
+    // preenche as categorias da barra de procura
+    var escolhaCategoria = document.getElementById('procura-categoria');
+    categorias(function (lista) {
+      escolhaCategoria.innerHTML =
+        '<option value="">Categorias</option>' +
+        lista.map(function (c) {
+          return '<option value="' + escapar(c.slug) + '">' + escapar(c.name) + '</option>';
+        }).join('');
+      if (params.get('categoria')) escolhaCategoria.value = params.get('categoria');
+    });
+
     document.getElementById('form-procura').addEventListener('submit', function (ev) {
       ev.preventDefault();
+      var procura = new URLSearchParams();
       var termo = document.getElementById('campo-procura').value.trim();
-      location.href = '/loja' + (termo ? '?q=' + encodeURIComponent(termo) : '');
+      var cat = escolhaCategoria.value;
+      if (termo) procura.set('q', termo);
+      if (cat) procura.set('categoria', cat);
+      var qs = procura.toString();
+      location.href = '/loja' + (qs ? '?' + qs : '');
     });
 
     actualizarCrachas();
@@ -243,6 +266,20 @@
   var conteudoCache = null;
   var conteudoPedido = null;
 
+  /* Categorias — lidas uma única vez e reaproveitadas em toda a página. */
+  var categoriasCache = null;
+  var categoriasPedido = null;
+
+  function categorias(callback) {
+    if (categoriasCache) { callback(categoriasCache); return; }
+    if (!categoriasPedido) {
+      categoriasPedido = api.get('/catalogo/categorias')
+        .then(function (r) { categoriasCache = r.dados || []; return categoriasCache; })
+        .catch(function () { categoriasCache = []; return categoriasCache; });
+    }
+    categoriasPedido.then(callback);
+  }
+
   /** Junta o que está gravado por cima dos valores por omissão. */
   function juntar(padrao, gravado) {
     var saida = {};
@@ -285,31 +322,53 @@
     var r = (c && c.rodape) || CONTEUDO_PADRAO.rodape;
     var telefoneLimpo = String(r.telefone || '').replace(/[^0-9+]/g, '');
 
+    var i = (c && c.inicio) || CONTEUDO_PADRAO.inicio;
+    var iconesConfianca = [ico.escudo, ico.camiao, ico.cartao, ico.estrela];
+
     alvo.className = 'rodape';
     alvo.innerHTML =
       '<div class="env">' +
+
+        // faixa de confiança, agora em todas as páginas
+        '<div class="rodape-confianca">' +
+          (i.confianca || []).map(function (x, n) {
+            return '<div>' + iconesConfianca[n % iconesConfianca.length] +
+              '<div><strong>' + escapar(x.titulo) + '</strong>' +
+              '<span>' + escapar(x.texto) + '</span></div></div>';
+          }).join('') +
+        '</div>' +
+
         '<div class="rodape-grelha">' +
           '<div>' +
             '<a class="logo" href="/" style="margin-bottom:14px"><img src="/assets/img/logo-full.png" alt="TeskBuy"></a>' +
             '<p class="silenciado pequeno" style="max-width:300px">' + escapar(r.descricao) + '</p>' +
+            '<form class="rodape-newsletter" id="form-newsletter-rodape">' +
+              '<label for="email-newsletter">' + escapar(i.newsletter_titulo) + '</label>' +
+              '<p class="silenciado pequeno">' + escapar(i.newsletter_texto) + '</p>' +
+              '<div class="linha-flex" style="gap:8px;margin-top:10px">' +
+                '<input type="email" id="email-newsletter" placeholder="o.seu.email@exemplo.ao" required aria-label="E-mail">' +
+                '<button class="btn btn-principal btn-pequeno" type="submit">Subscrever</button>' +
+              '</div>' +
+            '</form>' +
             '<div class="linha-flex" style="margin-top:16px">' +
               '<a class="pilula" href="' + escapar(r.facebook) + '" target="_blank" rel="noopener">Facebook</a>' +
               '<a class="pilula" href="' + escapar(r.whatsapp) + '" target="_blank" rel="noopener">WhatsApp</a>' +
             '</div>' +
           '</div>' +
-          '<div><h4>Comprar</h4><ul>' +
-            '<li><a href="/loja">Todos os produtos</a></li>' +
-            '<li><a href="/loja?categoria=telemoveis">Telemóveis</a></li>' +
-            '<li><a href="/loja?categoria=computadores">Computadores</a></li>' +
-            '<li><a href="/loja?categoria=impressoras">Impressoras</a></li>' +
-            '<li><a href="/loja?condicao=usado">Usados verificados</a></li>' +
+          '<div><h4>Empresa</h4><ul>' +
+            '<li><a href="/informacoes?p=sobre-nos">Sobre Nós</a></li>' +
+            '<li><a href="/informacoes?p=contacte-nos">Contacte-nos</a></li>' +
           '</ul></div>' +
-          '<div><h4>Conta</h4><ul>' +
-            '<li><a href="/entrar">Entrar</a></li>' +
-            '<li><a href="/registar">Criar conta</a></li>' +
-            '<li><a href="/encomendas">As minhas encomendas</a></li>' +
-            '<li><a href="/favoritos">Favoritos</a></li>' +
-            '<li><a href="/carrinho">Carrinho</a></li>' +
+          '<div><h4>Links úteis</h4><ul>' +
+            '<li><a href="/loja">Pesquisa</a></li>' +
+            '<li><a href="/informacoes?p=perguntas-frequentes">Perguntas Frequentes</a></li>' +
+          '</ul></div>' +
+          '<div><h4>Conformidade</h4><ul>' +
+            '<li><a href="/informacoes?p=termos">Termos de Serviço</a></li>' +
+            '<li><a href="/informacoes?p=privacidade">Política de Privacidade</a></li>' +
+            '<li><a href="/informacoes?p=envio">Política de Envio</a></li>' +
+            '<li><a href="/informacoes?p=devolucoes">Devoluções e Reembolsos</a></li>' +
+            '<li><a href="/informacoes?p=garantia">Política de Garantia</a></li>' +
           '</ul></div>' +
           '<div><h4>Contactos</h4><ul>' +
             '<li><a href="tel:' + escapar(telefoneLimpo) + '">' + escapar(r.telefone) + '</a></li>' +
@@ -330,6 +389,26 @@
             ' TeskBuy. Todos os direitos reservados.</p>' +
         '</div>' +
       '</div>';
+
+    ligarNewsletter();
+  }
+
+  /** Subscrição da newsletter, agora no rodapé de todas as páginas. */
+  function ligarNewsletter() {
+    var form = document.getElementById('form-newsletter-rodape');
+    if (!form) return;
+
+    form.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var campo = document.getElementById('email-newsletter');
+      var botao = form.querySelector('button');
+      botao.disabled = true;
+
+      api.post('/newsletter', { email: campo.value.trim() })
+        .then(function (r) { notificar(r.mensagem, 'ok'); campo.value = ''; })
+        .catch(function (e) { notificar(e.message, 'erro'); })
+        .then(function () { botao.disabled = false; });
+    });
   }
 
   /* ── cartão de produto ──────────────────────────────────── */

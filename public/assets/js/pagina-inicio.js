@@ -22,8 +22,6 @@
     definir('c-botao1', i.botao1);
     definir('c-botao2', i.botao2);
     definir('c-parceiros-titulo', i.parceiros_titulo);
-    definir('c-news-titulo', i.newsletter_titulo);
-    definir('c-news-texto', i.newsletter_texto);
 
     var titulo = document.getElementById('c-titulo');
     if (titulo) {
@@ -32,7 +30,6 @@
     }
 
     desenharSlides(i.slides, r);
-    desenharConfianca(i.confianca);
     desenharParceiros(i.parceiros);
     iniciarSlider();
   });
@@ -57,19 +54,6 @@
             '</div>'
           : '') +
       '</article>';
-    }).join('');
-  }
-
-  function desenharConfianca(cartoes) {
-    var alvo = document.getElementById('confianca');
-    if (!alvo || !cartoes || !cartoes.length) return;
-
-    var icones = [ui.ico.escudo, ui.ico.camiao, ui.ico.cartao, ui.ico.estrela];
-
-    alvo.innerHTML = cartoes.map(function (c, indice) {
-      return '<div>' + icones[indice % icones.length] +
-        '<div><strong>' + ui.escapar(c.titulo) + '</strong>' +
-        '<span>' + ui.escapar(c.texto) + '</span></div></div>';
     }).join('');
   }
 
@@ -163,16 +147,4 @@
   carregarGrelha('destaques', { destaque: 'true', limite: 8 }, 'Ainda sem destaques.');
   carregarGrelha('novidades', { ordenar: 'recentes', limite: 8 }, 'Ainda sem novidades.');
 
-  /* ── newsletter ─────────────────────────────────────────── */
-  document.getElementById('form-newsletter').addEventListener('submit', function (ev) {
-    ev.preventDefault();
-    var input = ev.target.querySelector('input');
-    var botao = ev.target.querySelector('button');
-    botao.disabled = true;
-
-    api.post('/newsletter', { email: input.value.trim() })
-      .then(function (r) { ui.notificar(r.mensagem, 'ok'); input.value = ''; })
-      .catch(function (e) { ui.notificar(e.message, 'erro'); })
-      .finally(function () { botao.disabled = false; });
-  });
 })();

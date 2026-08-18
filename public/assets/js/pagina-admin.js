@@ -820,7 +820,7 @@
 
       '<div class="cartao" style="margin-bottom:16px">' +
         '<h3 style="margin-bottom:16px">Cartões de confiança</h3>' +
-        '<p class="pequeno silenciado" style="margin-bottom:14px">Os ícones são fixos; só os textos mudam.</p>' +
+        '<p class="pequeno silenciado" style="margin-bottom:14px">Aparecem no rodapé, em todas as páginas. Os ícones são fixos; só os textos mudam.</p>' +
         htmlConfianca +
       '</div>' +
 
@@ -829,7 +829,7 @@
         campoTexto('in-parc-titulo', 'Título da faixa', i.parceiros_titulo) +
         campoTexto('in-parceiros', 'Parceiros', i.parceiros.join('\n'),
           { area: true, linhas: 4, ajuda: 'Um por linha.' }) +
-        campoTexto('in-news-titulo', 'Título da newsletter', i.newsletter_titulo) +
+        campoTexto('in-news-titulo', 'Título da newsletter (no rodapé)', i.newsletter_titulo) +
         campoTexto('in-news-texto', 'Texto da newsletter', i.newsletter_texto, { area: true, linhas: 2 }) +
       '</div>' +
 
