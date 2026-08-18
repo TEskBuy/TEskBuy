@@ -3,11 +3,90 @@
   'use strict';
   var api = window.TBApi, ui = window.TBUI;
 
-  ui.iniciar();
   var conteudo = document.getElementById('conteudo');
-  if (!ui.exigirSessao('/admin')) return;
 
-  var ESTADOS = ['pendente', 'confirmada', 'em_preparacao', 'enviada', 'entregue', 'cancelada', 'reembolsada'];
+  /* ── ecrã de entrada próprio da equipa ───────────────────────
+     Sem sessão, o /admin deixa de passar pela página da loja: mostra
+     aqui a sua própria caixa de entrada, sem menu, sem rodapé e sem
+     "criar conta". O cabeçalho e o rodapé ficam vazios de propósito,
+     porque o ui.iniciar() só corre depois de haver sessão. */
+  function ecraEntradaEquipa() {
+    document.title = 'Área de gestão — TeskBuy';
+
+    conteudo.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:center;min-height:78vh;padding:40px 0">' +
+        '<div style="width:min(400px,100%)">' +
+          '<div style="text-align:center;margin-bottom:26px">' +
+            '<p style="font-family:\'Space Grotesk\',sans-serif;font-weight:700;font-size:26px">' +
+              '<span class="accent">Tesk</span><span style="color:var(--teal-bright)">Buy</span></p>' +
+            '<p class="mono" style="font-size:11px;letter-spacing:.22em;text-transform:uppercase;' +
+              'color:var(--ink-dim);margin-top:6px">Área de gestão</p>' +
+          '</div>' +
+          '<div class="cartao" style="padding:30px">' +
+            '<h1 style="font-size:22px;margin-bottom:6px">Entrar</h1>' +
+            '<p class="pequeno silenciado" style="margin-bottom:22px">Acesso reservado à equipa TeskBuy.</p>' +
+            '<div id="aviso-equipa"></div>' +
+            '<form id="form-equipa">' +
+              '<div class="campo"><label for="eq-email">E-mail</label>' +
+                '<input type="email" id="eq-email" autocomplete="email" required ' +
+                'placeholder="admin@teskbuy.com"></div>' +
+              '<div class="campo"><label for="eq-passe">Palavra-passe</label>' +
+                '<input type="password" id="eq-passe" autocomplete="current-password" required ' +
+                'placeholder="••••••••"></div>' +
+              '<button class="btn btn-principal btn-largo" type="submit" id="eq-btn">Entrar</button>' +
+            '</form>' +
+            '<p class="pequeno silenciado centro" style="margin-top:18px">' +
+              '<a href="/" style="color:var(--ink-dim);text-decoration:none">← Voltar à loja</a></p>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    var formEq = document.getElementById('form-equipa');
+    var btnEq = document.getElementById('eq-btn');
+    var alvoEq = document.getElementById('aviso-equipa');
+
+    function avisarEq(mensagem, tipo) {
+      alvoEq.innerHTML = '<div class="aviso aviso-' + (tipo || 'erro') +
+        '" style="margin-bottom:18px">' + ui.escapar(mensagem) + '</div>';
+    }
+
+    formEq.addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      alvoEq.innerHTML = '';
+      btnEq.disabled = true;
+      btnEq.textContent = 'A entrar…';
+
+      api.entrar({
+        email: document.getElementById('eq-email').value.trim(),
+        palavra_passe: document.getElementById('eq-passe').value,
+      })
+        .then(function () { return api.get('/auth/eu'); })
+        .then(function (r) {
+          var papel = r.dados.utilizador.papel;
+          if (papel !== 'admin' && papel !== 'gestor') {
+            return api.sair().then(function () {
+              btnEq.disabled = false;
+              btnEq.textContent = 'Entrar';
+              avisarEq('Esta conta não tem acesso à área de gestão.');
+            });
+          }
+          location.reload();
+        })
+        .catch(function (e) {
+          btnEq.disabled = false;
+          btnEq.textContent = 'Entrar';
+          avisarEq(e.message);
+        });
+    });
+
+    document.getElementById('eq-email').focus();
+  }
+
+  if (!api.sessao.activa()) { ecraEntradaEquipa(); return; }
+
+  ui.iniciar();
+
+  var ESTADOS =['pendente', 'confirmada', 'em_preparacao', 'enviada', 'entregue', 'cancelada', 'reembolsada'];
 
   var vista = location.hash.replace('#', '') || 'painel';
   var eu = null;
@@ -674,7 +753,14 @@
           '<div class="cartao-vazio" style="margin:40px 0 70px">' +
             '<h3>Esta área é da equipa TeskBuy</h3>' +
             '<p>A sua conta não tem acesso ao painel de gestão. Se devia ter, fale com um administrador.</p>' +
-            '<a class="btn btn-principal" href="/">Voltar à loja</a></div>';
+            '<div class="linha-flex" style="justify-content:center">' +
+              '<a class="btn btn-principal" href="/">Voltar à loja</a>' +
+              '<button class="btn btn-secundario" id="trocar-conta">Entrar com outra conta</button>' +
+            '</div></div>';
+
+        document.getElementById('trocar-conta').addEventListener('click', function () {
+          api.sair().then(function () { location.reload(); });
+        });
         return null;
       }
 
