@@ -216,7 +216,7 @@
       if (ev.key === 'Escape' && nav.classList.contains('aberta')) menu(false);
     });
     window.addEventListener('resize', function () {
-      if (window.innerWidth > 780 && nav.classList.contains('aberta')) menu(false);
+      if (window.innerWidth > 1120 && nav.classList.contains('aberta')) menu(false);
     });
 
     // contactos reais do painel, assim que chegarem

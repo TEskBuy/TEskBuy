@@ -82,7 +82,19 @@ const reenviar = capturar(async (req, res) => {
   return ok(res, { enviado: true }, { mensagem: 'Enviámos um código novo. Verifique o seu e-mail.' });
 });
 
+/** Manda o cliente para o consentimento da Google. */
+const google = (req, res) => res.redirect(auth.urlGoogle(req.origemSite));
+
+/** Troca os tokens trazidos da Google por uma sessão da loja. */
+const sessaoGoogle = capturar(async (req, res) => {
+  const resultado = await auth.sessaoGoogle(req.body);
+  return ok(res, resultado, {
+    mensagem: `Bem-vindo à TeskBuy, ${resultado.utilizador?.nome || ''}.`.trim(),
+  });
+});
+
 module.exports = {
   registar, entrar, sair, renovar, eu, recuperar,
   definirPalavraPasse, alterarPalavraPasse, confirmar, reenviar,
+  google, sessaoGoogle,
 };

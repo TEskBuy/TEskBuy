@@ -437,6 +437,27 @@ tbody tr:hover{ background: rgba(238,247,248,0.03); }
 }
 .pagamentos b{ color: var(--sand); font-weight:600; }
 
+/* ── entrar com a Google ─────────────────────────────────────
+   A Google exige que o botão seja claramente identificável: fundo
+   branco, o logótipo a cores e o texto escuro. É de propósito que
+   destoa do resto — é assim que as pessoas o reconhecem. */
+.btn-google{
+  background:#fff; color:#1f1f1f; border:1px solid #dadce0;
+  font-weight:600; gap:11px;
+}
+.btn-google:hover{ background:#f6f7f8; border-color:#c6c9cd; }
+.btn-google svg{ width:19px; height:19px; flex-shrink:0; }
+
+.separador-ou{
+  display:flex; align-items:center; gap:12px;
+  margin:18px 0; color: var(--ink-dim);
+  font-family:'IBM Plex Mono',monospace; font-size:11px;
+  letter-spacing:0.1em; text-transform:uppercase;
+}
+.separador-ou::before, .separador-ou::after{
+  content:''; flex:1; height:1px; background: var(--linha);
+}
+
 /* ── utilidades ──────────────────────────────────────────── */
 .linha-flex{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
 .entre{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
@@ -454,7 +475,7 @@ tbody tr:hover{ background: rgba(238,247,248,0.03); }
 .centro{ text-align:center; }
 
 /* ── responsivo ──────────────────────────────────────────── */
-@media (max-width: 1180px){
+@media (max-width: 1260px){
   /* deixa de haver espaço para o texto da conta ao lado do menu */
   .conta-texto span{ display:none; }
   .conta-texto{ padding:6px; }
@@ -465,7 +486,9 @@ tbody tr:hover{ background: rgba(238,247,248,0.03); }
 @media (max-width: 900px){
   .rodape-grelha{ grid-template-columns: 1fr 1fr; gap:26px; }
 }
-@media (max-width: 780px){
+/* Abaixo disto os links já não cabem ao lado da barra de procura sem a
+   esmagarem — passa tudo para a gaveta. */
+@media (max-width: 1120px){
   /* no telemóvel só fica o ícone da conta, para não roubar espaço */
   .conta-texto span{ display:none; }
   .conta-texto{ padding:6px; }

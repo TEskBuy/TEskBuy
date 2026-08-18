@@ -37,6 +37,15 @@
     return;
   }
 
+  /* Entrar com a Google: o cliente sai do site, por isso guardamos aqui
+     para onde queria ir. A página /entrar-google lê isto ao regressar. */
+  var botaoGoogle = document.getElementById('entrar-google');
+  if (botaoGoogle) {
+    botaoGoogle.addEventListener('click', function () {
+      try { sessionStorage.setItem('tb.voltar', destino()); } catch (e) { /* sem sessionStorage, volta à raiz */ }
+    });
+  }
+
   /* token de recuperação vindo do e-mail (#access_token=…) */
   var tokenRecuperacao = null;
   if (pagina === 'nova-palavra-passe') {

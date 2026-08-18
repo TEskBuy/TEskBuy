@@ -89,6 +89,65 @@ async function entrar({ email, palavra_passe }) {
   return formatarSessao(data.session, data.user, perfil);
 }
 
+/* ── entrada com a conta Google ───────────────────────────────
+   O Supabase trata do diálogo com a Google. Nós só precisamos de
+   duas coisas: mandar o cliente para lá, e receber de volta os
+   tokens que ele traz para os transformar numa sessão nossa. */
+
+/** Endereço do Supabase que arranca o consentimento da Google. */
+function urlGoogle(origem) {
+  const regresso = `${origem || env.siteUrl}/entrar-google`;
+  return (
+    `${env.supabase.url}/auth/v1/authorize` +
+    `?provider=google&redirect_to=${encodeURIComponent(regresso)}`
+  );
+}
+
+/**
+ * Recebe os tokens devolvidos pela Google (via Supabase) e devolve uma
+ * sessão no mesmo formato de `entrar()`, para o frontend não notar diferença.
+ */
+async function sessaoGoogle({ access_token, refresh_token, expira_em }) {
+  const { data, error } = await publico.auth.getUser(access_token);
+  if (error || !data?.user) {
+    throw erros.naoAutenticado('A ligação com a Google expirou. Tente entrar outra vez.');
+  }
+
+  const utilizador = data.user;
+  const sessao = comUtilizador(access_token);
+
+  const { data: perfil } = await sessao
+    .from('profiles')
+    .select('full_name, phone, role, avatar_url, is_active')
+    .eq('id', utilizador.id)
+    .maybeSingle();
+
+  if (perfil && perfil.is_active === false) {
+    throw erros.semPermissao('Esta conta está suspensa. Contacte a TeskBuy pelo +244 943 277 184.');
+  }
+
+  // Na primeira entrada o perfil vem sem nome nem foto: a Google traz ambos.
+  const meta = utilizador.user_metadata || {};
+  const nomeGoogle = meta.full_name || meta.name || null;
+  const fotoGoogle = meta.avatar_url || meta.picture || null;
+
+  const porActualizar = { last_seen_at: new Date().toISOString() };
+  if (nomeGoogle && !perfil?.full_name) porActualizar.full_name = nomeGoogle;
+  if (fotoGoogle && !perfil?.avatar_url) porActualizar.avatar_url = fotoGoogle;
+
+  await sessao.from('profiles').update(porActualizar).eq('id', utilizador.id);
+
+  return formatarSessao(
+    { access_token, refresh_token, expires_at: expira_em },
+    utilizador,
+    {
+      ...(perfil || {}),
+      full_name: perfil?.full_name || nomeGoogle,
+      avatar_url: perfil?.avatar_url || fotoGoogle,
+    }
+  );
+}
+
 /** Traduz os erros próprios da confirmação por código de 6 dígitos. */
 function traduzCodigo(mensagem = '') {
   const m = mensagem.toLowerCase();
@@ -222,4 +281,5 @@ module.exports = {
   registar, entrar, sair, renovar, pedirRecuperacao,
   definirNovaPalavraPasse, alterarPalavraPasse, formatarSessao,
   confirmarCodigo, reenviarCodigo,
+  urlGoogle, sessaoGoogle,
 };
