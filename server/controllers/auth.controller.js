@@ -70,4 +70,19 @@ const alterarPalavraPasse = capturar(async (req, res) => {
   return ok(res, { actualizada: true }, { mensagem: 'Palavra-passe alterada.' });
 });
 
-module.exports = { registar, entrar, sair, renovar, eu, recuperar, definirPalavraPasse, alterarPalavraPasse };
+const confirmar = capturar(async (req, res) => {
+  const resultado = await auth.confirmarCodigo(req.body);
+  return ok(res, resultado, {
+    mensagem: `Conta confirmada. Bem-vindo à TeskBuy, ${resultado.utilizador?.nome || ''}.`.trim(),
+  });
+});
+
+const reenviar = capturar(async (req, res) => {
+  await auth.reenviarCodigo(req.body.email);
+  return ok(res, { enviado: true }, { mensagem: 'Enviámos um código novo. Verifique o seu e-mail.' });
+});
+
+module.exports = {
+  registar, entrar, sair, renovar, eu, recuperar,
+  definirPalavraPasse, alterarPalavraPasse, confirmar, reenviar,
+};
