@@ -17,8 +17,11 @@ function numero(nome, padrao) {
 }
 
 // Projecto Supabase da TeskBuy (valores públicos — ver nota abaixo).
-const PROJECTO_URL = 'https://ipmzxiqmzcjvyxxyoisf.supabase.co';
-const PROJECTO_CHAVE_PUBLICA = 'sb_publishable_vWvSwl8K_nPHBy4CJVDj7Q_C7q5ynrQ';
+// Estes valores apontavam para um projecto antigo que já não é o da loja. Se a
+// variável SUPABASE_URL faltasse, a aplicação falava com a base de dados errada
+// sem dar erro nenhum. Ficam agora certos, como rede de segurança.
+const PROJECTO_URL = 'https://wvdredizgnpzzmfbksnj.supabase.co';
+const PROJECTO_CHAVE_PUBLICA = 'sb_publishable_EKsSRVW_qtQGpj9UMH5CXg_ayCqAOz_';
 
 const env = {
   nodeEnv: opcional('NODE_ENV', 'development'),

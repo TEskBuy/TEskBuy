@@ -10,14 +10,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/teskbuy.css?v=20260818">
+<link rel="stylesheet" href="/assets/css/teskbuy.css?v=20260819a">
 <style>
-
-  /* ── Google Adsense ──────────────────. */
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9791307922949203"
-     crossorigin="anonymous"></script>
-
-  
   /* ── painel principal, de margem a margem ──────────────────
      A mesma peça serve o telemóvel e o computador: muda a altura,
      o recorte da imagem e o sítio onde o texto assenta. */
@@ -52,11 +46,14 @@
   .hb-seta{
     pointer-events:auto;
     width:42px; height:42px; border-radius:50%; cursor:pointer;
-    border:1px solid var(--linha-forte); background: rgba(6,48,60,0.55);
+    /* mais opacas do que antes: por cima de fotografias escuras as setas
+       quase desapareciam */
+    border:1px solid rgba(238,247,248,0.45); background: rgba(6,48,60,0.72);
     color: var(--ink); display:flex; align-items:center; justify-content:center;
-    backdrop-filter: blur(6px); transition: background .2s, border-color .2s;
+    backdrop-filter: blur(6px); box-shadow: 0 4px 14px rgba(2,18,24,0.4);
+    transition: background .2s, border-color .2s;
   }
-  .hb-seta:hover{ background: rgba(6,48,60,0.85); border-color: var(--orange); }
+  .hb-seta:hover{ background: rgba(6,48,60,0.92); border-color: var(--orange); }
   .hb-seta svg{ width:20px; height:20px; }
   .hb-ant svg{ transform: rotate(180deg); }
 
@@ -66,10 +63,12 @@
     display:flex; gap:8px; justify-content:flex-start;
   }
   .pontos button{
-    width:8px; height:8px; border-radius:50%; border:none; padding:0; cursor:pointer;
-    background: rgba(238,247,248,0.35); transition: background .3s, width .3s;
+    width:9px; height:9px; border-radius:50%; border:none; padding:0; cursor:pointer;
+    /* eram translúcidos demais para se verem em cima de uma fotografia */
+    background: rgba(238,247,248,0.6); box-shadow: 0 1px 6px rgba(2,18,24,0.55);
+    transition: background .3s, width .3s;
   }
-  .pontos button.activo{ background: var(--orange); width:24px; border-radius:5px; }
+  .pontos button.activo{ background: var(--orange); width:26px; border-radius:5px; }
 
   /* só para leitores de ecrã e motores de busca */
   .so-leitores{
@@ -207,9 +206,9 @@
 
 <footer id="rodape"></footer>
 
-<script src="/assets/js/api.js?v=20260818"></script>
-<script src="/assets/js/estado.js?v=20260818"></script>
-<script src="/assets/js/ui.js?v=20260818"></script>
-<script src="/assets/js/pagina-inicio.js?v=20260818"></script>
+<script src="/assets/js/api.js?v=20260819a"></script>
+<script src="/assets/js/estado.js?v=20260819a"></script>
+<script src="/assets/js/ui.js?v=20260819a"></script>
+<script src="/assets/js/pagina-inicio.js?v=20260819a"></script>
 </body>
 </html>

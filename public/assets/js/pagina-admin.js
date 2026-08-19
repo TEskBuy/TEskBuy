@@ -148,6 +148,7 @@
       { id: 'produtos', nome: 'Produtos' },
       { id: 'stock', nome: 'Stock', n: stockBaixo },
       { id: 'cupoes', nome: 'Cupões' },
+      { id: 'candidaturas', nome: 'Candidaturas' },
     ];
     if (eu.papel === 'admin') itens.push({ id: 'utilizadores', nome: 'Utilizadores' });
     if (eu.papel === 'admin') itens.push({ id: 'conteudo', nome: 'Conteúdo' });
@@ -957,11 +958,153 @@
   }
 
   /* ── arranque ────────────────────────────────────────────── */
+  /* ── candidaturas a vendedor e a afiliado ────────────────── */
+  var ESTADO_CAND = {
+    pendente: 'Em espera',
+    em_analise: 'Em análise',
+    info_pedida: 'Falta informação',
+    aprovado: 'Aprovada',
+    rejeitado: 'Não aprovada',
+    cancelado: 'Cancelada',
+  };
+
+  function verCandidaturas(estado) {
+    esqueleto(2);
+    var filtro = estado === undefined ? 'pendente' : estado;
+
+    api.get('/admin/candidaturas', { estado: filtro || undefined, limite: 50 })
+      .then(function (r) {
+        var itens = r.dados || [];
+
+        var filtros = ['pendente', 'info_pedida', 'aprovado', 'rejeitado', ''].map(function (f) {
+          return '<button class="pilula' + (f === filtro ? ' activa' : '') + '" data-filtro="' + f + '">' +
+            (f ? ESTADO_CAND[f] : 'Todas') + '</button>';
+        }).join('');
+
+        var corpo = itens.length
+          ? itens.map(cartaoCandidatura).join('')
+          : '<div class="cartao-vazio"><h3>Nada à espera</h3>' +
+            '<p class="silenciado">Não há candidaturas neste estado.</p></div>';
+
+        document.getElementById('painel-admin').innerHTML =
+          '<h1 style="margin-bottom:4px">Candidaturas</h1>' +
+          '<p class="silenciado pequeno" style="margin-bottom:16px">' +
+            'Pedidos para vender na TeskBuy ou para ser afiliado.</p>' +
+          '<div class="pilulas" style="margin-bottom:18px">' + filtros + '</div>' +
+          corpo;
+
+        document.querySelectorAll('[data-filtro]').forEach(function (b) {
+          b.addEventListener('click', function () { verCandidaturas(b.getAttribute('data-filtro')); });
+        });
+        document.querySelectorAll('[data-decisao]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            decidirCandidatura(b.getAttribute('data-id'), b.getAttribute('data-decisao'), b);
+          });
+        });
+      })
+      .catch(erroPainel);
+  }
+
+  function linha(rotulo, valorTexto) {
+    if (!valorTexto) return '';
+    return '<p class="pequeno" style="margin-bottom:4px">' +
+      '<span class="silenciado">' + rotulo + ':</span> ' + ui.escapar(String(valorTexto)) + '</p>';
+  }
+
+  function cartaoCandidatura(c) {
+    var d = c.dados || {};
+    var k = c.kyc || {};
+    var vendedor = c.tipo === 'vendedor';
+
+    return '<div class="cartao" style="margin-bottom:14px">' +
+      '<div class="entre" style="margin-bottom:12px">' +
+        '<div>' +
+          '<span class="selo ' + (vendedor ? 'selo-usado' : 'selo-desconto') + '">' +
+            (vendedor ? 'Vendedor' : 'Afiliado') + '</span> ' +
+          '<strong style="margin-left:8px">' + ui.escapar(d.nome_empresa || d.nome || '—') + '</strong>' +
+        '</div>' +
+        '<span class="pequeno silenciado">' + ui.data(c.criado_em, true) + '</span>' +
+      '</div>' +
+
+      '<div class="grelha-2" style="gap:14px">' +
+        '<div>' +
+          '<p class="eyebrow" style="margin-bottom:8px">Candidatura</p>' +
+          linha('Contacto', (c.utilizador && (c.utilizador.full_name || c.utilizador.email)) || '') +
+          linha('E-mail', d.email || (c.utilizador && c.utilizador.email)) +
+          linha('Telefone', d.telefone) +
+          linha('NIF', d.nif) +
+          linha('Nome legal', d.nome_legal) +
+          linha('Localidade', [d.municipio, d.provincia].filter(Boolean).join(', ')) +
+          linha('Actividade', d.descricao) +
+          linha('Canais', d.canais) +
+          linha('Motivo', d.motivo) +
+        '</div>' +
+        '<div>' +
+          '<p class="eyebrow" style="margin-bottom:8px">Identificação</p>' +
+          linha('Nome', k.full_name) +
+          linha('Documento', k.document_type) +
+          linha('Número', k.document_number) +
+          '<p class="pequeno silenciado" style="margin-top:8px">' +
+            ((k.documentos && k.documentos.length)
+              ? k.documentos.length + ' documento(s) enviado(s)'
+              : 'Sem documentos carregados.') +
+          '</p>' +
+        '</div>' +
+      '</div>' +
+
+      (c.estado === 'pendente' || c.estado === 'info_pedida' || c.estado === 'em_analise'
+        ? '<div class="campo" style="margin:14px 0 10px">' +
+            '<label for="nota-' + c.id + '">Nota para o candidato</label>' +
+            '<input id="nota-' + c.id + '" placeholder="Opcional. Aparece na conta dele.">' +
+          '</div>' +
+          '<div class="campo" style="margin-bottom:12px;max-width:220px">' +
+            '<label for="com-' + c.id + '">Comissão (%)</label>' +
+            '<input id="com-' + c.id + '" type="number" min="0" max="100" step="0.5" ' +
+              'value="' + (vendedor ? 10 : 5) + '">' +
+          '</div>' +
+          '<div class="linha-flex">' +
+            '<button class="btn btn-principal btn-pequeno" data-decisao="aprovar" data-id="' + c.id + '">Aprovar</button>' +
+            '<button class="btn btn-secundario btn-pequeno" data-decisao="pedir_info" data-id="' + c.id + '">Pedir informação</button>' +
+            '<button class="btn btn-fantasma btn-pequeno" data-decisao="rejeitar" data-id="' + c.id + '">Rejeitar</button>' +
+          '</div>'
+        : '<p class="pequeno" style="margin-top:14px"><span class="silenciado">Estado:</span> ' +
+            ui.escapar(ESTADO_CAND[c.estado] || c.estado) +
+            (c.nota_admin ? ' — ' + ui.escapar(c.nota_admin) : '') + '</p>') +
+    '</div>';
+  }
+
+  function decidirCandidatura(id, decisao, botao) {
+    var nota = document.getElementById('nota-' + id);
+    var comissao = document.getElementById('com-' + id);
+
+    if (decisao === 'rejeitar' && !confirm('Rejeitar esta candidatura?')) return;
+
+    botao.disabled = true;
+    var texto = botao.textContent;
+    botao.textContent = 'A guardar…';
+
+    api.patch('/admin/candidaturas/' + id, {
+      decisao: decisao,
+      nota: nota && nota.value.trim() ? nota.value.trim() : undefined,
+      comissao: comissao && comissao.value ? Number(comissao.value) : undefined,
+    })
+      .then(function (r) {
+        ui.notificar(r.mensagem, 'ok');
+        verCandidaturas('pendente');
+      })
+      .catch(function (e) {
+        ui.notificar(e.message, 'erro');
+        botao.disabled = false;
+        botao.textContent = texto;
+      });
+  }
+
   function abrir() {
     if (vista === 'encomendas') return verEncomendas();
     if (vista === 'produtos') return verProdutos();
     if (vista === 'stock') return verStock();
     if (vista === 'cupoes') return verCupoes();
+    if (vista === 'candidaturas') return verCandidaturas();
     if (vista === 'utilizadores' && eu.papel === 'admin') return verUtilizadores();
     if (vista === 'conteudo' && eu.papel === 'admin') return verConteudo();
     return verPainel();

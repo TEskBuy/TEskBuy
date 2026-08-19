@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vender ou ser afiliado — TeskBuy</title>
+<meta name="description" content="Venda os seus produtos na TeskBuy ou ganhe comissões como afiliado.">
+<link rel="icon" type="image/png" href="/assets/img/favicon.png">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/teskbuy.css?v=20260819a">
+<style>
+  .pc-topo{ padding:34px 0 8px; }
+  .pc-grelha{ display:grid; grid-template-columns:1fr 1fr; gap:18px; padding:10px 0 30px; }
+  .pc-opcao{
+    text-align:left; cursor:pointer; padding:22px;
+    border:1px solid var(--linha); border-radius:var(--raio); background:var(--surface);
+    color:inherit; font:inherit; transition:border-color .2s, transform .2s;
+  }
+  .pc-opcao:hover{ border-color:var(--orange); transform:translateY(-2px); }
+  .pc-opcao.activa{ border-color:var(--orange); background:rgba(242,102,13,.08); }
+  .pc-opcao h3{ margin-bottom:6px; }
+  .pc-opcao p{ color:var(--ink-dim); font-size:14px; }
+  .pc-passos{ display:flex; gap:10px; flex-wrap:wrap; margin:0 0 22px; }
+  .pc-passos span{
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:.06em;
+    padding:6px 12px; border:1px solid var(--linha); border-radius:999px; color:var(--ink-dim);
+  }
+  .pc-estado{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .pc-form{ display:none; }
+  .pc-form.visivel{ display:block; }
+  .pc-form h3{ margin:26px 0 14px; }
+  .pc-form .cartao{ padding:26px; }
+  @media (max-width:760px){ .pc-grelha{ grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="bg-glow"></div><div class="route-lines"></div>
+
+<header id="cabecalho"></header>
+
+<main class="env">
+  <section class="pc-topo">
+    <p class="eyebrow">Parcerias</p>
+    <h1 style="margin:12px 0 10px">Cresça connosco</h1>
+    <p class="silenciado" style="max-width:640px">
+      Venda os seus produtos a todo o país através da TeskBuy, ou ganhe comissões a divulgar
+      produtos de empresas parceiras. Escolha o que se adequa a si.
+    </p>
+  </section>
+
+  <div id="aviso"></div>
+  <div id="candidaturas"></div>
+
+  <div class="pc-grelha">
+    <button class="pc-opcao" id="op-vendedor" type="button">
+      <h3>Quero vender</h3>
+      <p>Publica os seus produtos, gere stock e preços, e recebe as encomendas na sua própria área.</p>
+    </button>
+    <button class="pc-opcao" id="op-afiliado" type="button">
+      <h3>Quero ser afiliado</h3>
+      <p>Divulga produtos de empresas parceiras e recebe uma comissão por cada venda que gerar.</p>
+    </button>
+  </div>
+
+  <div class="pc-passos">
+    <span>1 · Preenche os dados</span>
+    <span>2 · Enviamos para análise</span>
+    <span>3 · Resposta na sua conta</span>
+  </div>
+
+  <!-- ── vendedor ── -->
+  <form class="pc-form" id="form-vendedor">
+    <div class="cartao">
+      <h3 style="margin-top:0">Dados da empresa</h3>
+      <div class="campo-duplo">
+        <div class="campo"><label for="v-nome">Nome comercial</label>
+          <input id="v-nome" required placeholder="Ex.: Kiala Electrónica"></div>
+        <div class="campo"><label for="v-legal">Nome legal</label>
+          <input id="v-legal" placeholder="Como aparece nos documentos"></div>
+      </div>
+      <div class="campo-duplo">
+        <div class="campo"><label for="v-nif">NIF</label><input id="v-nif" required></div>
+        <div class="campo"><label for="v-tel">Telefone</label><input id="v-tel" required placeholder="+244 …"></div>
+      </div>
+      <div class="campo"><label for="v-email">E-mail da empresa</label>
+        <input type="email" id="v-email" required></div>
+      <div class="campo-duplo">
+        <div class="campo"><label for="v-prov">Província</label><input id="v-prov" value="Luanda"></div>
+        <div class="campo"><label for="v-mun">Município</label><input id="v-mun"></div>
+      </div>
+      <div class="campo"><label for="v-morada">Morada</label><input id="v-morada"></div>
+      <div class="campo"><label for="v-desc">O que vende</label>
+        <textarea id="v-desc" rows="3" placeholder="Descreva o tipo de produtos"></textarea></div>
+
+      <h3>Identificação do responsável</h3>
+      <div class="campo"><label for="v-k-nome">Nome completo</label><input id="v-k-nome" required></div>
+      <div class="campo-duplo">
+        <div class="campo"><label for="v-k-tipo">Tipo de documento</label>
+          <select id="v-k-tipo">
+            <option>Bilhete de Identidade</option><option>Passaporte</option><option>Cartão de residente</option>
+          </select></div>
+        <div class="campo"><label for="v-k-num">Número do documento</label><input id="v-k-num" required></div>
+      </div>
+      <div class="campo"><label for="v-k-morada">Morada do responsável</label><input id="v-k-morada"></div>
+
+      <div class="aviso aviso-info" style="margin:16px 0">
+        <span>Os documentos (frente e verso do BI, comprovativo de morada) são pedidos
+        logo a seguir, quando analisarmos a candidatura.</span>
+      </div>
+
+      <button class="btn btn-principal btn-largo" type="submit" id="v-submeter">Enviar candidatura</button>
+    </div>
+  </form>
+
+  <!-- ── afiliado ── -->
+  <form class="pc-form" id="form-afiliado">
+    <div class="cartao">
+      <h3 style="margin-top:0">Os seus dados</h3>
+      <div class="campo-duplo">
+        <div class="campo"><label for="a-nome">Nome</label><input id="a-nome" required></div>
+        <div class="campo"><label for="a-tel">Telefone</label><input id="a-tel" required placeholder="+244 …"></div>
+      </div>
+      <div class="campo"><label for="a-canais">Onde tenciona divulgar</label>
+        <textarea id="a-canais" rows="2" placeholder="Ex.: Facebook, WhatsApp, um site próprio"></textarea></div>
+      <div class="campo"><label for="a-motivo">Porque quer ser afiliado</label>
+        <textarea id="a-motivo" rows="3"></textarea></div>
+
+      <h3>Identificação</h3>
+      <div class="campo"><label for="a-k-nome">Nome completo</label><input id="a-k-nome" required></div>
+      <div class="campo-duplo">
+        <div class="campo"><label for="a-k-tipo">Tipo de documento</label>
+          <select id="a-k-tipo">
+            <option>Bilhete de Identidade</option><option>Passaporte</option><option>Cartão de residente</option>
+          </select></div>
+        <div class="campo"><label for="a-k-num">Número do documento</label><input id="a-k-num" required></div>
+      </div>
+      <div class="campo"><label for="a-k-morada">Morada</label><input id="a-k-morada"></div>
+
+      <div class="aviso aviso-info" style="margin:16px 0">
+        <span>Ser aprovado como afiliado não dá acesso imediato a todos os produtos:
+        depois terá de pedir parceria a cada empresa que quiser divulgar.</span>
+      </div>
+
+      <button class="btn btn-principal btn-largo" type="submit" id="a-submeter">Enviar candidatura</button>
+    </div>
+  </form>
+</main>
+
+<footer id="rodape"></footer>
+
+<script src="/assets/js/api.js?v=20260819a"></script>
+<script src="/assets/js/estado.js?v=20260819a"></script>
+<script src="/assets/js/ui.js?v=20260819a"></script>
+<script src="/assets/js/pagina-parceiro.js?v=20260819a"></script>
+</body>
+</html>

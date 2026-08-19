@@ -23,6 +23,16 @@ router.delete('/cupoes/:id', validar({ params: e.paramsId }), c.apagarCupao);
 router.get('/utilizadores', exigirAdmin, validar({ query: e.paginacao }), c.listarUtilizadores);
 router.patch('/utilizadores/:id/papel', exigirAdmin, validar({ params: e.paramsId, body: e.papelUtilizador }), c.mudarPapel);
 
+// Candidaturas a vendedor e a afiliado: a equipa vê, só o admin decide.
+const p = require('../controllers/parceiros.controller');
+router.get('/candidaturas', validar({ query: e.paginacao }), p.listar);
+router.patch(
+  '/candidaturas/:id',
+  exigirAdmin,
+  validar({ params: e.paramsId, body: e.decisaoCandidatura }),
+  p.decidir
+);
+
 router.put('/definicoes/:chave', exigirAdmin, c.guardarDefinicao);
 
 module.exports = router;

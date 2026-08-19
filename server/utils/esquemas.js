@@ -47,6 +47,56 @@ const novaPalavraPasse = z.object({
   palavra_passe: z.string().min(8, 'A palavra-passe deve ter pelo menos 8 caracteres.').max(72),
 });
 
+/* ── candidaturas a vendedor e a afiliado ──────────────────── */
+
+// Campo curto de candidatura: obrigatório quando se passa o nome do campo.
+const campo = (max, nome) =>
+  nome ? texto(2, max, nome) : z.string().trim().max(max).optional();
+
+// Documentos já carregados para o Storage: só guardamos o caminho.
+const documentoKyc = z.object({
+  tipo: z.string().trim().min(2).max(40),
+  caminho: z.string().trim().min(3).max(400),
+  mime: z.string().trim().max(100).optional(),
+});
+
+const dadosKyc = z.object({
+  nome_completo: campo(120, 'O nome completo'),
+  tipo_documento: campo(40, 'O tipo de documento'),
+  numero_documento: campo(60, 'O número do documento'),
+  data_nascimento: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data inválida.').optional(),
+  morada: campo(240),
+});
+
+const candidaturaVendedor = z.object({
+  nome_empresa: campo(120, 'O nome da empresa'),
+  nome_legal: campo(160),
+  nif: campo(40, 'O NIF'),
+  email: z.string().trim().toLowerCase().email('Indique um e-mail válido.'),
+  telefone: campo(40, 'O telefone'),
+  provincia: campo(60),
+  municipio: campo(60),
+  morada: campo(240),
+  descricao: z.string().trim().max(1000).optional(),
+  kyc: dadosKyc,
+  documentos: z.array(documentoKyc).max(8).default([]),
+});
+
+const candidaturaAfiliado = z.object({
+  nome: campo(120, 'O nome'),
+  telefone: campo(40, 'O telefone'),
+  canais: z.string().trim().max(500).optional(),   // onde tenciona divulgar
+  motivo: z.string().trim().max(1000).optional(),
+  kyc: dadosKyc,
+  documentos: z.array(documentoKyc).max(8).default([]),
+});
+
+const decisaoCandidatura = z.object({
+  decisao: z.enum(['aprovar', 'rejeitar', 'pedir_info']),
+  nota: z.string().trim().max(1000).optional(),
+  comissao: z.coerce.number().min(0).max(100).optional(),
+});
+
 const alteracaoPalavraPasse = z.object({
   actual: z.string().min(1, 'Escreva a palavra-passe actual.'),
   nova: z.string().min(8, 'A nova palavra-passe deve ter pelo menos 8 caracteres.').max(72),
@@ -205,6 +255,7 @@ const paramsProdutoId = z.object({ produtoId: uuid });
 module.exports = {
   registo, login, recuperacao, novaPalavraPasse, alteracaoPalavraPasse,
   confirmacaoCodigo, reenvioCodigo, sessaoGoogle,
+  candidaturaVendedor, candidaturaAfiliado, decisaoCandidatura,
   listagemProdutos, criarProduto, actualizarProduto, categoria, avaliacao,
   adicionarAoCarrinho, actualizarItemCarrinho, sincronizarCarrinho,
   criarEncomenda, estadoEncomenda, perfil, morada,

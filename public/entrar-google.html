@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/teskbuy.css?v=20260818">
+<link rel="stylesheet" href="/assets/css/teskbuy.css?v=20260819a">
 <style>
   .espera{
     min-height:70vh; display:flex; flex-direction:column;
@@ -36,9 +36,9 @@
   <div class="caixa-erro" id="caixa-erro"></div>
 </main>
 
-<script src="/assets/js/api.js?v=20260818"></script>
-<script src="/assets/js/estado.js?v=20260818"></script>
-<script src="/assets/js/ui.js?v=20260818"></script>
+<script src="/assets/js/api.js?v=20260819a"></script>
+<script src="/assets/js/estado.js?v=20260819a"></script>
+<script src="/assets/js/ui.js?v=20260819a"></script>
 <script>
 (function () {
   'use strict';
@@ -78,7 +78,12 @@
   var acesso = frag.get('access_token');
   var renovacao = frag.get('refresh_token');
   if (!acesso || !renovacao) {
-    falhar('A Google não devolveu a informação necessária. Tente novamente.');
+    falhar(
+      procura.get('code')
+        ? 'A resposta veio num formato que não conseguimos usar. Confirme no Supabase, em ' +
+          'Authentication → URL Configuration, que este endereço está na lista de Redirect URLs.'
+        : 'A Google não devolveu a informação necessária. Tente novamente.'
+    );
     return;
   }
 

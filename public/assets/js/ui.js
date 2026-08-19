@@ -445,7 +445,9 @@
           '</div>' +
           coluna('Empresa',
             '<li><a href="/informacoes?p=sobre-nos">Sobre Nós</a></li>' +
-            '<li><a href="/informacoes?p=contacte-nos">Contacte-nos</a></li>') +
+            '<li><a href="/informacoes?p=contacte-nos">Contacte-nos</a></li>' +
+            '<li><a href="/parceiro">Vender na TeskBuy</a></li>' +
+            '<li><a href="/parceiro">Programa de afiliados</a></li>') +
           coluna('Links úteis',
             '<li><a href="/loja">Pesquisa</a></li>' +
             '<li><a href="/informacoes?p=perguntas-frequentes">Perguntas Frequentes</a></li>') +
@@ -688,7 +690,49 @@
   }
 
   /* ── arranque comum ─────────────────────────────────────── */
+  /**
+   * Rede de segurança da entrada com a Google.
+   *
+   * Quando o endereço de regresso não está na lista de "Redirect URLs" do
+   * Supabase, ele não dá erro: manda o cliente para o Site URL — normalmente a
+   * página inicial — com os tokens no fim do endereço (#access_token=…).
+   * Sem isto, o cliente autenticava-se na Google e voltava à loja como se nada
+   * fosse. Aqui apanhamos esses tokens em qualquer página e concluímos a entrada.
+   */
+  function capturarSessaoDoEndereco() {
+    if (!location.hash || location.hash.indexOf('access_token') === -1) return false;
+
+    var frag = new URLSearchParams(location.hash.replace(/^#/, ''));
+    var acesso = frag.get('access_token');
+    var renovacao = frag.get('refresh_token');
+    if (!acesso || !renovacao) return false;
+
+    // a recuperação de palavra-passe tem página própria — não lhe tocamos
+    if (frag.get('type') === 'recovery') return false;
+    if (/nova-palavra-passe|entrar-google/.test(location.pathname)) return false;
+
+    history.replaceState(null, '', location.pathname + location.search);
+
+    api.post('/auth/sessao-google', {
+      access_token: acesso,
+      refresh_token: renovacao,
+      expira_em: frag.get('expires_at') || undefined,
+    })
+      .then(function (r) {
+        api.sessao.guardar(r.dados.sessao);
+        api.utilizador.guardar(r.dados.utilizador);
+        return sincronizarAposLogin();
+      })
+      .then(function () { location.reload(); })
+      .catch(function (e) {
+        notificar(e.message || 'Não foi possível concluir a entrada com a Google.', 'erro');
+      });
+
+    return true;
+  }
+
   function iniciar(paginaActiva) {
+    capturarSessaoDoEndereco();
     cabecalho(paginaActiva);
     rodape();
     estado.aoMudar(actualizarCrachas);

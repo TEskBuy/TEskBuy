@@ -48,6 +48,7 @@ router.use('/carrinho', require('./carrinho.routes'));
 router.use('/favoritos', require('./favoritos.routes'));
 router.use('/encomendas', require('./encomendas.routes'));
 router.use('/utilizadores', require('./utilizadores.routes'));
+router.use('/parceiros', require('./parceiros.routes'));
 router.use('/admin', require('./admin.routes'));
 
 router.post('/newsletter', capturar(async (req, res) => {
