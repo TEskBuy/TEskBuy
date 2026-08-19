@@ -150,6 +150,8 @@
                 : '<a class="nav-contacto" href="/entrar">' + ico.conta + '<span>Entrar</span></a>' +
                   '<a class="nav-contacto" href="/entrar?registo=1">' + ico.mais + '<span>Criar conta</span></a>') +
               '<a class="nav-contacto" href="/favoritos">' + ico.coracao + '<span>Favoritos</span></a>' +
+              '<a class="nav-contacto" href="/parceiro">' + ico.camiao + '<span>Vender na TeskBuy</span></a>' +
+              '<a class="nav-contacto" href="/afiliado">' + ico.estrela + '<span>Área de afiliado</span></a>' +
             '</div>' +
             '<div class="nav-bloco">' +
               '<h4>Precisa de ajuda?</h4>' +
@@ -731,7 +733,75 @@
     return true;
   }
 
+  /**
+   * Envia um ficheiro para o Supabase Storage.
+   *
+   * O ficheiro não passa pela nossa API: pedimos-lhe apenas uma autorização
+   * de escrita e os bytes seguem directos para o Supabase. Devolve o caminho
+   * e, quando o cofre é público, o endereço definitivo da imagem.
+   */
+  function carregarFicheiro(ficheiro, finalidade) {
+    if (!ficheiro) return Promise.reject(new Error('Escolha um ficheiro.'));
+
+    return api.post('/ficheiros/autorizacao', {
+      finalidade: finalidade,
+      mime: ficheiro.type,
+      nome: ficheiro.name,
+    }).then(function (r) {
+      var a = r.dados;
+      return fetch(a.url_carregamento, {
+        method: 'PUT',
+        headers: { 'Content-Type': ficheiro.type },
+        body: ficheiro,
+      }).then(function (resposta) {
+        if (!resposta.ok) throw new Error('O envio do ficheiro falhou. Tente novamente.');
+        return { caminho: a.caminho, url: a.url_publica, cofre: a.cofre };
+      });
+    });
+  }
+
+  /**
+   * Guarda o código do afiliado que trouxe a visita.
+   *
+   * Fica 30 dias. Se o cliente comprar dentro desse prazo, a comissão é
+   * atribuída a quem divulgou. O código sai do endereço à vista, para não
+   * andar a passear pelas ligações que o cliente possa partilhar.
+   */
+  var CHAVE_REF = 'tb.ref';
+  var DIAS_REF = 30;
+
+  function guardarReferencia() {
+    var codigo = new URLSearchParams(location.search).get('ref');
+    if (!codigo) return;
+
+    try {
+      localStorage.setItem(CHAVE_REF, JSON.stringify({
+        codigo: codigo.trim().toLowerCase(),
+        ate: Date.now() + DIAS_REF * 86400000,
+      }));
+    } catch (e) { /* sem localStorage, a atribuição perde-se — não é grave */ }
+
+    var procura = new URLSearchParams(location.search);
+    procura.delete('ref');
+    var qs = procura.toString();
+    history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+  }
+
+  /** Código válido, ou null se não houver ou já ter expirado. */
+  function referencia() {
+    try {
+      var guardado = JSON.parse(localStorage.getItem(CHAVE_REF) || 'null');
+      if (!guardado || !guardado.codigo) return null;
+      if (guardado.ate && guardado.ate < Date.now()) {
+        localStorage.removeItem(CHAVE_REF);
+        return null;
+      }
+      return guardado.codigo;
+    } catch (e) { return null; }
+  }
+
   function iniciar(paginaActiva) {
+    guardarReferencia();
     capturarSessaoDoEndereco();
     cabecalho(paginaActiva);
     rodape();
@@ -750,5 +820,6 @@
     alternarFavorito: alternarFavorito, adicionarAoCarrinho: adicionarAoCarrinho,
     actualizarCrachas: actualizarCrachas, esqueletos: esqueletos,
     exigirSessao: exigirSessao, sincronizarAposLogin: sincronizarAposLogin, refrescarSessao: refrescarSessao,
+    carregarFicheiro: carregarFicheiro, referencia: referencia,
   };
 })(window);

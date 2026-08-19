@@ -81,6 +81,16 @@
             '<span class="mono">SKU ' + ui.escapar(p.sku) + '</span>' +
           '</div>' +
 
+          // quem vende: a própria loja, ou uma empresa parceira
+          '<p class="pequeno" style="margin:-10px 0 18px">' +
+            '<span class="silenciado">Vendido por</span> <strong>' +
+            ui.escapar(p.vendedor ? p.vendedor.name : 'TeskBuy') + '</strong>' +
+            (p.vendedor && p.vendedor.rating_count
+              ? ' <span class="silenciado">· ' + Number(p.vendedor.rating).toFixed(1) + '/5 em ' +
+                p.vendedor.rating_count + ' avaliação(ões)</span>'
+              : '') +
+          '</p>' +
+
           (p.short_description ? '<p class="silenciado" style="margin-bottom:22px">' + ui.escapar(p.short_description) + '</p>' : '') +
 
           '<div class="linha-flex" style="margin-bottom:6px">' +

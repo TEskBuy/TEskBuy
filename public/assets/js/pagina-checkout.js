@@ -209,6 +209,7 @@
         referencia: form.referencia.value.trim(),
         notas: form.notas.value.trim(),
         cupao: form.cupao.value.trim(),
+        ref: ui.referencia() || undefined,
       };
 
       api.post('/encomendas', dados)

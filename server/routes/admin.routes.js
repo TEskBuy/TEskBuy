@@ -33,6 +33,11 @@ router.patch(
   p.decidir
 );
 
+// Parcerias entre afiliados e empresas
+const af = require('../controllers/afiliados.controller');
+router.get('/parcerias', validar({ query: e.paginacao }), af.listarParcerias);
+router.patch('/parcerias/:id', exigirAdmin, validar({ params: e.paramsId, body: e.decisaoParceriaAdmin }), af.decidirAdmin);
+
 router.put('/definicoes/:chave', exigirAdmin, c.guardarDefinicao);
 
 module.exports = router;

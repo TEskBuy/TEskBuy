@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/teskbuy.css?v=20260819a">
+<link rel="stylesheet" href="/assets/css/teskbuy.css?v=20260819d">
 <style>
   .pc-topo{ padding:34px 0 8px; }
   .pc-grelha{ display:grid; grid-template-columns:1fr 1fr; gap:18px; padding:10px 0 30px; }
@@ -106,10 +106,11 @@
       </div>
       <div class="campo"><label for="v-k-morada">Morada do responsável</label><input id="v-k-morada"></div>
 
-      <div class="aviso aviso-info" style="margin:16px 0">
-        <span>Os documentos (frente e verso do BI, comprovativo de morada) são pedidos
-        logo a seguir, quando analisarmos a candidatura.</span>
-      </div>
+      <h3>Documentos</h3>
+      <div class="campo"><label for="v-docs">Bilhete de Identidade, NIF da empresa, comprovativo de morada</label>
+        <input type="file" id="v-docs" accept="image/*,application/pdf" multiple>
+        <span class="ajuda" id="v-docs-estado">PNG, JPG ou PDF, até 10 MB cada. Só a equipa TeskBuy os vê.</span></div>
+      <ul id="v-docs-lista" class="pequeno silenciado" style="list-style:none;margin-bottom:14px"></ul>
 
       <button class="btn btn-principal btn-largo" type="submit" id="v-submeter">Enviar candidatura</button>
     </div>
@@ -139,6 +140,12 @@
       </div>
       <div class="campo"><label for="a-k-morada">Morada</label><input id="a-k-morada"></div>
 
+      <h3>Documentos</h3>
+      <div class="campo"><label for="a-docs">Bilhete de Identidade ou passaporte</label>
+        <input type="file" id="a-docs" accept="image/*,application/pdf" multiple>
+        <span class="ajuda" id="a-docs-estado">PNG, JPG ou PDF, até 10 MB cada. Só a equipa TeskBuy os vê.</span></div>
+      <ul id="a-docs-lista" class="pequeno silenciado" style="list-style:none;margin-bottom:14px"></ul>
+
       <div class="aviso aviso-info" style="margin:16px 0">
         <span>Ser aprovado como afiliado não dá acesso imediato a todos os produtos:
         depois terá de pedir parceria a cada empresa que quiser divulgar.</span>
@@ -151,9 +158,9 @@
 
 <footer id="rodape"></footer>
 
-<script src="/assets/js/api.js?v=20260819a"></script>
-<script src="/assets/js/estado.js?v=20260819a"></script>
-<script src="/assets/js/ui.js?v=20260819a"></script>
-<script src="/assets/js/pagina-parceiro.js?v=20260819a"></script>
+<script src="/assets/js/api.js?v=20260819d"></script>
+<script src="/assets/js/estado.js?v=20260819d"></script>
+<script src="/assets/js/ui.js?v=20260819d"></script>
+<script src="/assets/js/pagina-parceiro.js?v=20260819d"></script>
 </body>
 </html>

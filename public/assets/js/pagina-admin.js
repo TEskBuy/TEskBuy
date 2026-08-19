@@ -149,6 +149,7 @@
       { id: 'stock', nome: 'Stock', n: stockBaixo },
       { id: 'cupoes', nome: 'Cupões' },
       { id: 'candidaturas', nome: 'Candidaturas' },
+      { id: 'parcerias', nome: 'Parcerias' },
     ];
     if (eu.papel === 'admin') itens.push({ id: 'utilizadores', nome: 'Utilizadores' });
     if (eu.papel === 'admin') itens.push({ id: 'conteudo', nome: 'Conteúdo' });
@@ -411,7 +412,7 @@
     var edicao = Boolean(p);
     p = p || {};
 
-    modal(edicao ? 'Editar produto' : 'Adicionar produto',
+    var caixa = modal(edicao ? 'Editar produto' : 'Adicionar produto',
       '<div class="campo-duplo">' +
         '<div class="campo"><label for="p-nome">Nome</label>' +
           '<input id="p-nome" required value="' + ui.escapar(p.name || '') + '"></div>' +
@@ -461,6 +462,9 @@
         '<div class="campo"><label for="p-limite">Alertar com stock abaixo de</label>' +
           '<input id="p-limite" type="number" min="0" value="' + (p.low_stock_threshold != null ? p.low_stock_threshold : 3) + '"></div>' +
       '</div>' +
+      '<div class="campo"><label for="p-ficheiro">Carregar imagens</label>' +
+        '<input type="file" id="p-ficheiro" accept="image/*" multiple>' +
+        '<span class="ajuda" id="p-estado-envio">A primeira da lista é a principal.</span></div>' +
       '<div class="campo"><label for="p-imagens">Imagens (um endereço por linha)</label>' +
         '<textarea id="p-imagens" placeholder="https://…">' +
         ui.escapar((p.imagens || []).map(function (i) { return i.url; }).join('\n')) + '</textarea>' +
@@ -501,6 +505,43 @@
         });
       },
       edicao ? 'Guardar alterações' : 'Adicionar produto');
+
+    ligarCarregamentoImagens(caixa, 'loja');
+  }
+
+  /**
+   * Liga um <input type="file"> à caixa de endereços de imagens.
+   * Os ficheiros vão directos para o Supabase Storage; aqui só entra o endereço.
+   */
+  function ligarCarregamentoImagens(fundo, finalidade) {
+    var entrada = fundo.querySelector('#p-ficheiro');
+    if (!entrada) return;
+
+    entrada.addEventListener('change', function (ev) {
+      var ficheiros = Array.prototype.slice.call(ev.target.files || []);
+      if (!ficheiros.length) return;
+
+      var estado = fundo.querySelector('#p-estado-envio');
+      var caixaImagens = fundo.querySelector('#p-imagens');
+      var enviados = 0;
+      estado.textContent = 'A enviar 0 de ' + ficheiros.length + '…';
+
+      ficheiros.reduce(function (cadeia, f) {
+        return cadeia.then(function () {
+          return ui.carregarFicheiro(f, finalidade).then(function (r) {
+            enviados += 1;
+            caixaImagens.value = (caixaImagens.value ? caixaImagens.value.trim() + '\n' : '') + r.url;
+            estado.textContent = 'A enviar ' + enviados + ' de ' + ficheiros.length + '…';
+          });
+        });
+      }, Promise.resolve())
+        .then(function () { estado.textContent = enviados + ' imagem(ns) carregada(s).'; })
+        .catch(function (e) {
+          estado.textContent = e.message || 'Não foi possível enviar.';
+          ui.notificar(e.message || 'Não foi possível enviar a imagem.', 'erro');
+        })
+        .then(function () { ev.target.value = ''; });
+    });
   }
 
   /* ── stock ───────────────────────────────────────────────── */
@@ -996,6 +1037,16 @@
         document.querySelectorAll('[data-filtro]').forEach(function (b) {
           b.addEventListener('click', function () { verCandidaturas(b.getAttribute('data-filtro')); });
         });
+        // os documentos são privados: abre-se um endereço temporário
+        document.querySelectorAll('[data-doc]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            b.disabled = true;
+            api.get('/ficheiros/documento', { caminho: b.getAttribute('data-doc') })
+              .then(function (res) { window.open(res.dados.url, '_blank', 'noopener'); })
+              .catch(function (e) { ui.notificar(e.message, 'erro'); })
+              .then(function () { b.disabled = false; });
+          });
+        });
         document.querySelectorAll('[data-decisao]').forEach(function (b) {
           b.addEventListener('click', function () {
             decidirCandidatura(b.getAttribute('data-id'), b.getAttribute('data-decisao'), b);
@@ -1044,11 +1095,14 @@
           linha('Nome', k.full_name) +
           linha('Documento', k.document_type) +
           linha('Número', k.document_number) +
-          '<p class="pequeno silenciado" style="margin-top:8px">' +
-            ((k.documentos && k.documentos.length)
-              ? k.documentos.length + ' documento(s) enviado(s)'
-              : 'Sem documentos carregados.') +
-          '</p>' +
+          ((k.documentos && k.documentos.length)
+            ? '<div class="linha-flex" style="margin-top:8px">' +
+                k.documentos.map(function (d, n) {
+                  return '<button class="pilula" data-doc="' + ui.escapar(d.storage_path) + '">' +
+                    'Documento ' + (n + 1) + '</button>';
+                }).join('') +
+              '</div>'
+            : '<p class="pequeno silenciado" style="margin-top:8px">Sem documentos carregados.</p>') +
         '</div>' +
       '</div>' +
 
@@ -1099,12 +1153,117 @@
       });
   }
 
+  /* ── parcerias entre afiliados e empresas ────────────────── */
+  var ESTADO_PARC = {
+    pendente: 'À espera de análise',
+    em_analise_admin: 'Em análise',
+    enviado_vendedor: 'Com a empresa',
+    aceite: 'Aceite pela empresa',
+    recusado: 'Recusada',
+    cancelado: 'Cancelada',
+  };
+
+  function verParcerias(estado) {
+    esqueleto(2);
+    var filtro = estado === undefined ? 'pendente' : estado;
+
+    api.get('/admin/parcerias', { estado: filtro || undefined, limite: 50 })
+      .then(function (r) {
+        var itens = r.dados || [];
+
+        var filtros = ['pendente', 'enviado_vendedor', 'aceite', 'recusado', ''].map(function (f) {
+          return '<button class="pilula' + (f === filtro ? ' activa' : '') + '" data-pfiltro="' + f + '">' +
+            (f ? ESTADO_PARC[f] : 'Todas') + '</button>';
+        }).join('');
+
+        document.getElementById('painel-admin').innerHTML =
+          '<h1 style="margin-bottom:4px">Parcerias</h1>' +
+          '<p class="silenciado pequeno" style="margin-bottom:16px">' +
+            'Pedidos de afiliados para divulgar produtos de empresas. ' +
+            'A decisão final é da empresa; aqui só se encaminha ou trava.</p>' +
+          '<div class="pilulas" style="margin-bottom:18px">' + filtros + '</div>' +
+          (itens.length
+            ? itens.map(cartaoParceria).join('')
+            : '<div class="cartao-vazio"><h3>Nada neste estado</h3>' +
+              '<p class="silenciado">Não há pedidos para mostrar.</p></div>');
+
+        document.querySelectorAll('[data-pfiltro]').forEach(function (b) {
+          b.addEventListener('click', function () { verParcerias(b.getAttribute('data-pfiltro')); });
+        });
+        document.querySelectorAll('[data-pdecisao]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            decidirParceria(b.getAttribute('data-pid'), b.getAttribute('data-pdecisao'), b);
+          });
+        });
+      })
+      .catch(erroPainel);
+  }
+
+  function cartaoParceria(p) {
+    var porDecidir = ['pendente', 'em_analise_admin'].indexOf(p.estado) !== -1;
+
+    return '<div class="cartao" style="margin-bottom:14px">' +
+      '<div class="entre" style="margin-bottom:10px">' +
+        '<div>' +
+          '<strong>' + ui.escapar(p.afiliado ? (p.afiliado.nome || p.afiliado.email) : '—') + '</strong>' +
+          '<span class="silenciado"> quer divulgar </span>' +
+          '<strong>' + ui.escapar(p.empresa ? p.empresa.name : '—') + '</strong>' +
+        '</div>' +
+        '<span class="pequeno silenciado">' + ui.data(p.criada_em) + '</span>' +
+      '</div>' +
+      '<p class="pequeno silenciado" style="margin-bottom:6px">Estado: ' +
+        ui.escapar(ESTADO_PARC[p.estado] || p.estado) + '</p>' +
+      (p.afiliado ? '<p class="pequeno mono silenciado">Código: ' + ui.escapar(p.afiliado.codigo) + '</p>' : '') +
+      (p.mensagem ? '<p class="pequeno" style="margin-top:8px">' + ui.escapar(p.mensagem) + '</p>' : '') +
+      (porDecidir
+        ? '<div class="campo" style="margin:12px 0 8px">' +
+            '<label for="pn-' + p.id + '">Nota</label>' +
+            '<input id="pn-' + p.id + '" placeholder="Opcional.">' +
+          '</div>' +
+          '<div class="campo" style="margin-bottom:12px;max-width:220px">' +
+            '<label for="pc-' + p.id + '">Comissão sugerida (%)</label>' +
+            '<input id="pc-' + p.id + '" type="number" min="0" max="100" step="0.5" ' +
+              'value="' + (p.comissao != null ? p.comissao : 5) + '">' +
+          '</div>' +
+          '<div class="linha-flex">' +
+            '<button class="btn btn-principal btn-pequeno" data-pdecisao="encaminhar" data-pid="' + p.id + '">' +
+              'Encaminhar à empresa</button>' +
+            '<button class="btn btn-fantasma btn-pequeno" data-pdecisao="travar" data-pid="' + p.id + '">Travar</button>' +
+          '</div>'
+        : (p.nota_empresa
+            ? '<p class="pequeno silenciado" style="margin-top:8px">Empresa: ' + ui.escapar(p.nota_empresa) + '</p>'
+            : '')) +
+    '</div>';
+  }
+
+  function decidirParceria(id, decisao, botao) {
+    var nota = document.getElementById('pn-' + id);
+    var comissao = document.getElementById('pc-' + id);
+
+    botao.disabled = true;
+    var texto = botao.textContent;
+    botao.textContent = 'A guardar…';
+
+    api.patch('/admin/parcerias/' + id, {
+      decisao: decisao,
+      nota: nota && nota.value.trim() ? nota.value.trim() : undefined,
+      comissao: comissao && comissao.value ? Number(comissao.value) : undefined,
+    })
+      .then(function (r) { ui.notificar(r.mensagem, 'ok'); verParcerias('pendente'); })
+      .catch(function (e) {
+        ui.notificar(e.message, 'erro');
+        botao.disabled = false;
+        botao.textContent = texto;
+      });
+  }
+
   function abrir() {
     if (vista === 'encomendas') return verEncomendas();
     if (vista === 'produtos') return verProdutos();
     if (vista === 'stock') return verStock();
     if (vista === 'cupoes') return verCupoes();
     if (vista === 'candidaturas') return verCandidaturas();
+    if (vista === 'parcerias') return verParcerias();
     if (vista === 'utilizadores' && eu.papel === 'admin') return verUtilizadores();
     if (vista === 'conteudo' && eu.papel === 'admin') return verConteudo();
     return verPainel();

@@ -91,6 +91,54 @@
     return saida;
   }
 
+  /* ── documentos ────────────────────────────────────────────
+     Os ficheiros vão directos para o cofre privado do Supabase; aqui só
+     ficamos com o caminho, que é o que a candidatura leva. */
+  var documentos = { vendedor: [], afiliado: [] };
+
+  function ligarDocumentos(prefixo, chave) {
+    var entrada = document.getElementById(prefixo + '-docs');
+    var estado = document.getElementById(prefixo + '-docs-estado');
+    var listaDocs = document.getElementById(prefixo + '-docs-lista');
+    if (!entrada) return;
+
+    entrada.addEventListener('change', function (ev) {
+      var ficheiros = Array.prototype.slice.call(ev.target.files || []);
+      if (!ficheiros.length) return;
+
+      if (!api.sessao.activa()) {
+        ui.notificar('Entre na sua conta antes de enviar documentos.', 'erro');
+        ev.target.value = '';
+        return;
+      }
+
+      estado.textContent = 'A enviar 0 de ' + ficheiros.length + '…';
+      var enviados = 0;
+
+      ficheiros.reduce(function (cadeia, f) {
+        return cadeia.then(function () {
+          return ui.carregarFicheiro(f, 'kyc').then(function (r) {
+            enviados += 1;
+            documentos[chave].push({ tipo: 'documento', caminho: r.caminho, mime: f.type });
+            var li = document.createElement('li');
+            li.textContent = '✓ ' + f.name;
+            listaDocs.appendChild(li);
+            estado.textContent = 'A enviar ' + enviados + ' de ' + ficheiros.length + '…';
+          });
+        });
+      }, Promise.resolve())
+        .then(function () { estado.textContent = enviados + ' documento(s) enviado(s).'; })
+        .catch(function (e) {
+          estado.textContent = e.message || 'Não foi possível enviar.';
+          ui.notificar(e.message || 'Não foi possível enviar o documento.', 'erro');
+        })
+        .then(function () { ev.target.value = ''; });
+    });
+  }
+
+  ligarDocumentos('v', 'vendedor');
+  ligarDocumentos('a', 'afiliado');
+
   function submeter(form, botaoId, caminho, montar) {
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
@@ -140,6 +188,7 @@
         numero_documento: v('v-k-num'),
         morada: v('v-k-morada'),
       }),
+      documentos: documentos.vendedor,
     });
   });
 
@@ -155,6 +204,7 @@
         numero_documento: v('a-k-num'),
         morada: v('a-k-morada'),
       }),
+      documentos: documentos.afiliado,
     });
   });
 

@@ -41,6 +41,19 @@ async function criar(utilizadorId, dados) {
   if (error) throw error;
 
   const encomendaId = Array.isArray(data) ? data[0]?.id : data?.id;
+
+  // Se a compra veio de uma divulgação, a comissão é atribuída aqui. A função
+  // corre na base de dados e verifica tudo: se o código existe, se há parceria
+  // aceite com a empresa de cada linha, e se o comprador não é o próprio
+  // afiliado. Uma falha aqui não pode deitar abaixo a encomenda.
+  if (dados.ref) {
+    try {
+      await db().rpc('atribuir_comissoes', { p_order_id: encomendaId, p_ref: dados.ref });
+    } catch (e) {
+      /* a encomenda vale mais do que a comissão: segue-se em frente */
+    }
+  }
+
   return obter(encomendaId, { ignorarDono: true });
 }
 
