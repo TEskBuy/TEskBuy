@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A minha conta — TeskBuy</title>
+<meta name="description" content="Os seus dados e moradas na TeskBuy.">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" type="image/png" href="/assets/img/favicon.png">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/teskbuy.css?v=20260819f">
+<style>
+  .conta-grelha{ display:grid; grid-template-columns: 230px 1fr; gap:30px; align-items:start; padding:30px 0 50px; }
+  .menu-conta{ display:flex; flex-direction:column; gap:2px; }
+  .menu-conta button, .menu-conta a{
+    text-align:left; background:none; border:none; cursor:pointer; text-decoration:none;
+    color:var(--ink-dim); font-family:inherit; font-size:14.5px; padding:11px 14px; border-radius:var(--raio-s);
+  }
+  .menu-conta button:hover, .menu-conta a:hover{ background:rgba(238,247,248,.06); color:var(--ink); }
+  .menu-conta button.activo{ background:rgba(242,102,13,.14); color:var(--orange-soft); }
+  /* sem isto, a fila de separadores empurra a página toda para fora do ecrã */
+  .conta-grelha > *{ min-width:0; }
+  @media (max-width:760px){
+    .conta-grelha{ grid-template-columns:1fr; gap:20px; padding:20px 0 40px; }
+    .menu-conta{
+      flex-direction:row; flex-wrap:nowrap; gap:6px;
+      overflow-x:auto; -webkit-overflow-scrolling:touch;
+      padding-bottom:6px; scrollbar-width:none;
+    }
+    .menu-conta::-webkit-scrollbar{ display:none; }
+    .menu-conta button, .menu-conta a{
+      flex:0 0 auto; white-space:nowrap; padding:9px 14px; font-size:14px;
+      border:1px solid var(--linha); border-radius:999px;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="bg-glow"></div><div class="route-lines"></div>
+<header id="cabecalho"></header>
+<main class="env"><div id="conteudo"></div></main>
+<footer id="rodape"></footer>
+<script src="/assets/js/api.js?v=20260819f"></script>
+<script src="/assets/js/estado.js?v=20260819f"></script>
+<script src="/assets/js/ui.js?v=20260819f"></script>
+<script src="/assets/js/pagina-conta.js?v=20260819f"></script>
+</body>
+</html>

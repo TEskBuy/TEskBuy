@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entrar — TeskBuy</title>
+<meta name="description" content="Inicie sessão na sua conta TeskBuy.">
+<meta name="robots" content="noindex,nofollow">
+<link rel="icon" type="image/png" href="/assets/img/favicon.png">
+<link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/teskbuy.css?v=20260819f">
+<style>
+  .autenticacao{ display:flex; align-items:center; justify-content:center; padding:48px 0 64px; }
+  .caixa{ width:min(430px, 100%); }
+  .caixa .cartao{ padding:30px; }
+  .caixa h1{ font-size:27px; margin-bottom:6px; }
+  .caixa .sub{ color:var(--ink-dim); font-size:14px; margin-bottom:24px; }
+  .caixa .rodape-form{ text-align:center; margin-top:18px; font-size:14px; color:var(--ink-dim); }
+  .caixa .rodape-form a{ color:var(--orange-soft); text-decoration:none; }
+  .marca-topo{ display:flex; justify-content:center; margin-bottom:26px; }
+  .marca-topo img{ height:38px; }
+</style>
+</head>
+<body>
+<div class="bg-glow"></div><div class="route-lines"></div>
+<header id="cabecalho"></header>
+<main class="env autenticacao">
+  <div class="caixa">
+    <div class="marca-topo"><a href="/"><img src="/assets/img/logo-full.png" alt="TeskBuy"></a></div>
+    <div class="cartao">
+      <h1>Entrar</h1>
+      <p class="sub">Bem-vindo de volta. Continue de onde ficou.</p>
+      <div id="aviso"></div>
+
+      <a class="btn btn-google btn-largo" href="/api/auth/google" id="entrar-google">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="#4285F4" d="M21.6 12.23c0-.71-.06-1.4-.18-2.05H12v3.88h5.38a4.6 4.6 0 0 1-2 3.02v2.5h3.23c1.89-1.74 2.99-4.3 2.99-7.35z"/>
+          <path fill="#34A853" d="M12 22c2.7 0 4.96-.9 6.61-2.42l-3.23-2.5c-.9.6-2.04.96-3.38.96-2.6 0-4.8-1.76-5.59-4.12H3.07v2.58A10 10 0 0 0 12 22z"/>
+          <path fill="#FBBC05" d="M6.41 13.92a6 6 0 0 1 0-3.84V7.5H3.07a10 10 0 0 0 0 9l3.34-2.58z"/>
+          <path fill="#EA4335" d="M12 5.94c1.47 0 2.79.51 3.83 1.5l2.86-2.86C16.95 2.98 14.7 2 12 2A10 10 0 0 0 3.07 7.5l3.34 2.58C7.2 7.72 9.4 5.94 12 5.94z"/>
+        </svg>
+        Continuar com a Google
+      </a>
+
+      <div class="separador-ou"><span>ou com o seu e-mail</span></div>
+
+      <form id="form">
+        <div class="campo"><label for="email">E-mail</label>
+          <input type="email" id="email" name="email" autocomplete="email" required placeholder="o.seu.email@exemplo.ao"></div>
+        <div class="campo"><label for="palavra_passe">Palavra-passe</label>
+          <input type="password" id="palavra_passe" name="palavra_passe" autocomplete="current-password" required placeholder="••••••••"></div>
+        <div style="text-align:right;margin:-6px 0 18px"><a href="/recuperar" class="pequeno" style="color:var(--ink-dim);text-decoration:none">Esqueceu-se da palavra-passe?</a></div>
+        <button class="btn btn-principal btn-largo" type="submit" id="submeter">Entrar</button>
+      </form>
+      <p class="rodape-form">Ainda não tem conta? <a href="/registar">Criar conta</a></p>
+    </div>
+  </div>
+</main>
+<footer id="rodape"></footer>
+<script src="/assets/js/api.js?v=20260819f"></script>
+<script src="/assets/js/estado.js?v=20260819f"></script>
+<script src="/assets/js/ui.js?v=20260819f"></script>
+<script src="/assets/js/pagina-autenticacao.js?v=20260819f"></script>
+</body>
+</html>
