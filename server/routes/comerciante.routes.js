@@ -28,6 +28,10 @@ router.get('/tickets', sp.meusTickets);
 router.post('/tickets', validar({ body: e.novoTicket }), sp.abrirTicket);
 router.post('/tickets/:id/mensagens', validar({ params: e.paramsId, body: e.mensagemTicket }), sp.responderEmpresa);
 
+const df = require('../controllers/definicoes.controller');
+router.get('/conversas', df.conversasDaEmpresa);
+router.post('/conversas/:id/mensagens', validar({ params: e.paramsId, body: e.mensagemTicket }), df.enviarMensagem);
+
 router.get('/avaliacoes', c.listarAvaliacoes);
 router.post('/avaliacoes/:id/resposta', validar({ params: e.paramsId, body: e.respostaAvaliacao }), c.responderAvaliacao);
 

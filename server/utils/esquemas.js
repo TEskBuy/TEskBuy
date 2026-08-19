@@ -209,6 +209,36 @@ const estadoTicket = z.object({
   estado: z.enum(['aberto', 'em_analise', 'aguarda_empresa', 'aguarda_admin', 'resolvido', 'fechado']),
 });
 
+/* ── definições da conta ───────────────────────────────────── */
+
+const preferencias = z.object({
+  idioma: z.enum(['pt', 'en']).optional(),
+  notificar_email: z.boolean().optional(),
+  notificar_plataforma: z.boolean().optional(),
+});
+
+// Nunca se recebe aqui um número de cartão completo: o campo "referencia"
+// é guardado mascarado, só com os últimos dígitos à vista.
+const metodoPagamento = z.object({
+  para: z.enum(['pessoal', 'empresa']).default('pessoal'),
+  tipo: z.enum(['multicaixa_express', 'transferencia_bancaria', 'numerario', 'iban']),
+  etiqueta: texto(2, 60, 'A etiqueta'),
+  referencia: z.string().trim().max(60).optional(),
+  titular: z.string().trim().max(120).optional(),
+  banco: z.string().trim().max(80).optional(),
+  por_omissao: z.boolean().default(false),
+});
+
+const eliminarConta = z.object({
+  motivo: z.string().trim().max(500).optional(),
+});
+
+const novaConversa = z.object({
+  empresa_id: uuid,
+  assunto: z.string().trim().max(160).optional(),
+  mensagem: texto(1, 4000, 'A mensagem'),
+});
+
 /* ── ficheiros ─────────────────────────────────────────────── */
 
 const autorizacaoFicheiro = z.object({
@@ -382,6 +412,7 @@ module.exports = {
   autorizacaoFicheiro,
   pedidoParceria, decisaoParceriaAdmin, decisaoParceriaEmpresa,
   denuncia, tratarDenuncia, avaliacaoVendedor, novoTicket, mensagemTicket, estadoTicket,
+  preferencias, metodoPagamento, eliminarConta, novaConversa,
   listagemProdutos, criarProduto, actualizarProduto, categoria, avaliacao,
   adicionarAoCarrinho, actualizarItemCarrinho, sincronizarCarrinho,
   criarEncomenda, estadoEncomenda, perfil, morada,

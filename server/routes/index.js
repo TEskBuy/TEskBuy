@@ -54,6 +54,8 @@ router.use('/ficheiros', require('./ficheiros.routes'));
 router.use('/afiliados', require('./afiliados.routes'));
 router.use('/suporte', require('./suporte.routes'));
 router.use('/notificacoes', require('./notificacoes.routes'));
+router.use('/definicoes', require('./definicoes.routes'));
+router.use('/conversas', require('./conversas.routes'));
 router.use('/admin', require('./admin.routes'));
 
 router.post('/newsletter', capturar(async (req, res) => {
