@@ -26,6 +26,9 @@
     var separadores = [
       { id: 'dados', nome: 'Os meus dados' },
       { id: 'moradas', nome: 'Moradas' },
+      { id: 'mensagens', nome: 'Mensagens' },
+      { id: 'denuncias', nome: 'Denúncias' },
+      { id: 'definicoes', nome: 'Definições' },
       { id: 'seguranca', nome: 'Segurança' },
     ];
 
@@ -275,7 +278,246 @@
     });
   }
 
+  /* ── mensagens com empresas ──────────────────────────────── */
+  function verMensagens() {
+    moldura('<div id="lista-conversas">' + ui.esqueletos(2, 'esqueleto') + '</div>');
+
+    api.get('/conversas').then(function (r) {
+      var itens = r.dados || [];
+
+      document.getElementById('lista-conversas').innerHTML =
+        '<h2 style="margin-bottom:6px">Mensagens</h2>' +
+        '<p class="silenciado pequeno" style="margin-bottom:18px">' +
+          'Conversas com as empresas parceiras. Para falar com a TeskBuy, use uma denúncia.</p>' +
+        (itens.length
+          ? itens.map(function (c) {
+              return '<div class="cartao" style="margin-bottom:12px">' +
+                '<div class="entre" style="margin-bottom:8px">' +
+                  '<strong>' + ui.escapar(c.empresa ? c.empresa.name : 'Empresa') + '</strong>' +
+                  (c.por_ler ? '<span class="selo selo-desconto" style="position:static">' +
+                    c.por_ler + ' por ler</span>' : '') +
+                '</div>' +
+                '<div style="max-height:240px;overflow:auto;margin-bottom:10px">' +
+                  c.mensagens.map(function (m) {
+                    return '<div style="padding:7px 0;border-bottom:1px solid rgba(238,247,248,.06)">' +
+                      '<p class="pequeno silenciado">' + (m.minha ? 'Eu' : 'Empresa') + ' · ' +
+                        ui.data(m.criada_em, true) + '</p>' +
+                      '<p class="pequeno">' + ui.escapar(m.texto) + '</p>' +
+                    '</div>';
+                  }).join('') +
+                '</div>' +
+                '<div class="campo"><input id="mc-' + c.id + '" placeholder="Escrever mensagem…"></div>' +
+                '<button class="btn btn-secundario btn-pequeno" data-menviar="' + c.id + '">Enviar</button>' +
+              '</div>';
+            }).join('')
+          : '<div class="cartao-vazio"><h3>Sem mensagens</h3>' +
+            '<p class="silenciado">Pode falar com uma empresa a partir da ficha de um produto dela.</p></div>');
+
+      document.querySelectorAll('[data-menviar]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var id = b.getAttribute('data-menviar');
+          var campo = document.getElementById('mc-' + id);
+          if (!campo.value.trim()) return ui.notificar('Escreva a mensagem.', 'erro');
+          b.disabled = true;
+          api.post('/conversas/' + id + '/mensagens', { mensagem: campo.value.trim() })
+            .then(function (res) { ui.notificar(res.mensagem, 'ok'); verMensagens(); })
+            .catch(function (e) { ui.notificar(e.message, 'erro'); b.disabled = false; });
+        });
+      });
+
+      itens.forEach(function (c) {
+        if (c.por_ler) api.post('/conversas/' + c.id + '/lidas').catch(function () {});
+      });
+    }).catch(function (e) {
+      document.getElementById('lista-conversas').innerHTML =
+        '<div class="aviso aviso-erro">' + ui.escapar(e.message) + '</div>';
+    });
+  }
+
+  /* ── as minhas denúncias ─────────────────────────────────── */
+  var ESTADO_DEN = {
+    nova: 'Recebida', em_analise: 'Em análise', resolvida: 'Resolvida', rejeitada: 'Não procedente',
+  };
+
+  function verDenuncias() {
+    moldura('<div id="lista-denuncias">' + ui.esqueletos(2, 'esqueleto') + '</div>');
+
+    api.get('/suporte/denuncias').then(function (r) {
+      var itens = r.dados || [];
+      document.getElementById('lista-denuncias').innerHTML =
+        '<h2 style="margin-bottom:6px">Denúncias</h2>' +
+        '<p class="silenciado pequeno" style="margin-bottom:18px">' +
+          'Problemas que comunicou à TeskBuy e o que foi feito.</p>' +
+        (itens.length
+          ? itens.map(function (d) {
+              return '<div class="cartao" style="margin-bottom:12px">' +
+                '<div class="entre">' +
+                  '<strong>' + ui.escapar(d.produto ? d.produto.name : 'Encomenda') + '</strong>' +
+                  '<span class="pequeno">' + ui.escapar(ESTADO_DEN[d.estado] || d.estado) + '</span>' +
+                '</div>' +
+                (d.descricao ? '<p class="pequeno silenciado" style="margin-top:8px">' +
+                  ui.escapar(d.descricao) + '</p>' : '') +
+                (d.resolucao ? '<p class="pequeno" style="margin-top:8px">' +
+                  '<span class="silenciado">Resposta:</span> ' + ui.escapar(d.resolucao) + '</p>' : '') +
+                '<p class="pequeno silenciado" style="margin-top:8px">' + ui.data(d.criada_em) + '</p>' +
+              '</div>';
+            }).join('')
+          : '<div class="cartao-vazio"><h3>Sem denúncias</h3>' +
+            '<p class="silenciado">Se algum artigo chegar mal, denuncie na ficha do produto.</p></div>');
+    }).catch(function (e) {
+      document.getElementById('lista-denuncias').innerHTML =
+        '<div class="aviso aviso-erro">' + ui.escapar(e.message) + '</div>';
+    });
+  }
+
+  /* ── definições ──────────────────────────────────────────── */
+  var TIPOS_METODO = {
+    multicaixa_express: 'Multicaixa Express',
+    transferencia_bancaria: 'Transferência bancária',
+    numerario: 'Numerário',
+    iban: 'Conta bancária (IBAN)',
+  };
+
+  function verDefinicoes() {
+    moldura('<div id="painel-definicoes">' + ui.esqueletos(2, 'esqueleto') + '</div>');
+
+    Promise.all([api.get('/definicoes/perfil'), api.get('/definicoes/pagamentos')])
+      .then(function (r) {
+        var d = r[0].dados;
+        var metodos = r[1].dados || [];
+        var p = d.preferencias;
+
+        document.getElementById('painel-definicoes').innerHTML =
+          '<h2 style="margin-bottom:6px">Definições</h2>' +
+          '<p class="silenciado pequeno" style="margin-bottom:18px">' +
+            'Idioma, notificações e formas de pagamento.</p>' +
+
+          '<div class="cartao" style="margin-bottom:16px">' +
+            '<h3 style="margin-bottom:12px">Preferências</h3>' +
+            '<div class="campo"><label for="df-idioma">Idioma</label>' +
+              '<select id="df-idioma">' +
+                d.idiomas.map(function (i) {
+                  return '<option value="' + i.codigo + '"' +
+                    (p.language === i.codigo ? ' selected' : '') + '>' + i.nome + '</option>';
+                }).join('') +
+              '</select></div>' +
+            '<label class="opcao"><input type="checkbox" id="df-email"' +
+              (p.notify_email ? ' checked' : '') + '>' +
+              '<span><strong>Avisos por e-mail</strong>' +
+              '<span>Encomendas, respostas e novidades importantes.</span></span></label>' +
+            '<label class="opcao"><input type="checkbox" id="df-plataforma"' +
+              (p.notify_platform ? ' checked' : '') + '>' +
+              '<span><strong>Avisos no site</strong>' +
+              '<span>Aparecem no sino do cabeçalho.</span></span></label>' +
+            '<button class="btn btn-principal" id="df-guardar" style="margin-top:14px">Guardar</button>' +
+          '</div>' +
+
+          '<div class="cartao" style="margin-bottom:16px">' +
+            '<h3 style="margin-bottom:6px">Métodos de pagamento</h3>' +
+            '<p class="pequeno silenciado" style="margin-bottom:14px">' +
+              'Nunca guardamos números completos de cartão — apenas os últimos dígitos, ' +
+              'para os reconhecer.</p>' +
+            (metodos.length
+              ? metodos.map(function (m) {
+                  return '<div class="linha-flex" style="justify-content:space-between;' +
+                    'padding:9px 0;border-bottom:1px solid rgba(238,247,248,.06)">' +
+                    '<div><p class="pequeno">' + ui.escapar(m.etiqueta) + '</p>' +
+                      '<p class="pequeno silenciado">' + ui.escapar(m.nome_tipo) +
+                      (m.referencia ? ' · ' + ui.escapar(m.referencia) : '') + '</p></div>' +
+                    '<button class="btn btn-fantasma btn-pequeno" data-apagar-metodo="' + m.id + '">Remover</button>' +
+                  '</div>';
+                }).join('')
+              : '<p class="pequeno silenciado">Ainda sem métodos guardados.</p>') +
+            '<div class="campo-duplo" style="margin-top:14px">' +
+              '<div class="campo"><label for="mp-tipo">Tipo</label><select id="mp-tipo">' +
+                Object.keys(TIPOS_METODO).map(function (k) {
+                  return '<option value="' + k + '">' + TIPOS_METODO[k] + '</option>';
+                }).join('') +
+              '</select></div>' +
+              '<div class="campo"><label for="mp-etiqueta">Etiqueta</label>' +
+                '<input id="mp-etiqueta" placeholder="Ex.: BAI principal"></div>' +
+            '</div>' +
+            '<div class="campo-duplo">' +
+              '<div class="campo"><label for="mp-ref">Referência ou IBAN</label>' +
+                '<input id="mp-ref" placeholder="Guardamos só os últimos dígitos"></div>' +
+              '<div class="campo"><label for="mp-titular">Titular</label><input id="mp-titular"></div>' +
+            '</div>' +
+            '<button class="btn btn-secundario" id="mp-guardar">Acrescentar método</button>' +
+          '</div>' +
+
+          '<div class="cartao">' +
+            '<h3 style="margin-bottom:6px">Eliminar conta</h3>' +
+            '<p class="pequeno silenciado" style="margin-bottom:12px">' +
+              'O pedido é analisado pela equipa. As encomendas antigas mantêm-se no ' +
+              'histórico da loja por obrigação legal.</p>' +
+            '<div class="campo"><input id="del-motivo" placeholder="Motivo (opcional)"></div>' +
+            '<button class="btn btn-perigo" id="del-conta">Pedir eliminação</button>' +
+          '</div>';
+
+        ligarDefinicoes(d);
+      })
+      .catch(function (e) {
+        document.getElementById('painel-definicoes').innerHTML =
+          '<div class="aviso aviso-erro">' + ui.escapar(e.message) + '</div>';
+      });
+  }
+
+  function ligarDefinicoes() {
+    document.getElementById('df-guardar').addEventListener('click', function (ev) {
+      var b = ev.currentTarget;
+      b.disabled = true;
+      api.put('/definicoes/preferencias', {
+        idioma: document.getElementById('df-idioma').value,
+        notificar_email: document.getElementById('df-email').checked,
+        notificar_plataforma: document.getElementById('df-plataforma').checked,
+      })
+        .then(function (r) { ui.notificar(r.mensagem, 'ok'); })
+        .catch(function (e) { ui.notificar(e.message, 'erro'); })
+        .then(function () { b.disabled = false; });
+    });
+
+    document.getElementById('mp-guardar').addEventListener('click', function (ev) {
+      var b = ev.currentTarget;
+      var etiqueta = document.getElementById('mp-etiqueta').value.trim();
+      if (etiqueta.length < 2) return ui.notificar('Escreva uma etiqueta.', 'erro');
+
+      b.disabled = true;
+      api.post('/definicoes/pagamentos', {
+        para: 'pessoal',
+        tipo: document.getElementById('mp-tipo').value,
+        etiqueta: etiqueta,
+        referencia: document.getElementById('mp-ref').value.trim() || undefined,
+        titular: document.getElementById('mp-titular').value.trim() || undefined,
+      })
+        .then(function (r) { ui.notificar(r.mensagem, 'ok'); verDefinicoes(); })
+        .catch(function (e) { ui.notificar(e.message, 'erro'); b.disabled = false; });
+    });
+
+    document.querySelectorAll('[data-apagar-metodo]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        b.disabled = true;
+        api.del('/definicoes/pagamentos/' + b.getAttribute('data-apagar-metodo'))
+          .then(function (r) { ui.notificar(r.mensagem, 'ok'); verDefinicoes(); })
+          .catch(function (e) { ui.notificar(e.message, 'erro'); b.disabled = false; });
+      });
+    });
+
+    document.getElementById('del-conta').addEventListener('click', function (ev) {
+      if (!confirm('Pedir a eliminação da sua conta TeskBuy?')) return;
+      var b = ev.currentTarget;
+      b.disabled = true;
+      api.post('/definicoes/eliminar-conta', {
+        motivo: document.getElementById('del-motivo').value.trim() || undefined,
+      })
+        .then(function (r) { ui.notificar(r.mensagem, 'ok'); })
+        .catch(function (e) { ui.notificar(e.message, 'erro'); b.disabled = false; });
+    });
+  }
+
   function desenhar() {
+    if (separador === 'mensagens') return verMensagens();
+    if (separador === 'denuncias') return verDenuncias();
+    if (separador === 'definicoes') return verDefinicoes();
     if (separador === 'moradas') {
       moldura(painelMoradas());
       ligarMoradas();

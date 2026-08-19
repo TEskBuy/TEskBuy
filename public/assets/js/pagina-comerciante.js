@@ -31,6 +31,7 @@
       { id: 'encomendas', nome: 'Encomendas' },
       { id: 'afiliados', nome: 'Afiliados' },
       { id: 'avaliacoes', nome: 'Avaliações' },
+      { id: 'mensagens', nome: 'Mensagens' },
       { id: 'suporte', nome: 'Suporte' },
       { id: 'empresa', nome: 'A minha empresa' },
     ];
@@ -642,11 +643,61 @@
     }).catch(erroPainel);
   }
 
+  /* ── mensagens de clientes e afiliados ───────────────────── */
+  function verMensagens() {
+    esqueleto(2);
+    api.get('/comerciante/conversas').then(function (r) {
+      var itens = r.dados || [];
+
+      document.getElementById('painel-parceiro').innerHTML =
+        '<h1 style="margin-bottom:4px">Mensagens</h1>' +
+        '<p class="silenciado pequeno" style="margin-bottom:16px">' +
+          'Conversas com clientes e afiliados. A TeskBuy não as lê.</p>' +
+        (itens.length
+          ? itens.map(function (c) {
+              return '<div class="cartao" style="margin-bottom:12px">' +
+                '<div class="entre" style="margin-bottom:8px">' +
+                  '<strong>' + ui.escapar(c.cliente ? c.cliente.nome : 'Cliente') + '</strong>' +
+                  '<span class="pequeno silenciado">' +
+                    (c.tipo === 'afiliado_empresa' ? 'Afiliado' : 'Cliente') +
+                    (c.por_ler ? ' · ' + c.por_ler + ' por ler' : '') + '</span>' +
+                '</div>' +
+                '<div style="max-height:240px;overflow:auto;margin-bottom:10px">' +
+                  c.mensagens.map(function (m) {
+                    return '<div style="padding:7px 0;border-bottom:1px solid rgba(238,247,248,.06)">' +
+                      '<p class="pequeno silenciado">' + (m.minha ? 'Eu' : 'Cliente') + ' · ' +
+                        ui.data(m.criada_em, true) + '</p>' +
+                      '<p class="pequeno">' + ui.escapar(m.texto) + '</p>' +
+                    '</div>';
+                  }).join('') +
+                '</div>' +
+                '<div class="campo"><input id="cv-' + c.id + '" placeholder="Responder…"></div>' +
+                '<button class="btn btn-secundario btn-pequeno" data-cenviar="' + c.id + '">Enviar</button>' +
+              '</div>';
+            }).join('')
+          : '<div class="cartao-vazio"><h3>Sem mensagens</h3>' +
+            '<p class="silenciado">Os clientes podem escrever-lhe a partir dos seus produtos.</p></div>');
+
+      document.querySelectorAll('[data-cenviar]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var id = b.getAttribute('data-cenviar');
+          var campo = document.getElementById('cv-' + id);
+          if (!campo.value.trim()) return ui.notificar('Escreva a mensagem.', 'erro');
+          b.disabled = true;
+          api.post('/comerciante/conversas/' + id + '/mensagens', { mensagem: campo.value.trim() })
+            .then(function (res) { ui.notificar(res.mensagem, 'ok'); verMensagens(); })
+            .catch(function (e) { ui.notificar(e.message, 'erro'); b.disabled = false; });
+        });
+      });
+    }).catch(erroPainel);
+  }
+
   function abrir() {
     if (vista === 'produtos') return verProdutos();
     if (vista === 'encomendas') return verEncomendas();
     if (vista === 'afiliados') return verAfiliados();
     if (vista === 'avaliacoes') return verAvaliacoes();
+    if (vista === 'mensagens') return verMensagens();
     if (vista === 'suporte') return verSuporte();
     if (vista === 'empresa') return verEmpresa();
     return verResumo();

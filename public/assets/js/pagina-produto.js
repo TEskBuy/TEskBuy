@@ -108,6 +108,34 @@
     });
   }
 
+  /** Abre conversa com a empresa que vende este produto. */
+  function ligarConversa(p) {
+    var botao = document.getElementById('btn-falar');
+    if (!botao || !p.vendedor) return;
+
+    botao.addEventListener('click', function () {
+      if (!api.sessao.activa()) {
+        location.href = '/entrar?voltar=' + encodeURIComponent(location.pathname + location.search);
+        return;
+      }
+
+      var mensagem = prompt('Mensagem para ' + p.vendedor.name + ':', '');
+      if (mensagem === null || !mensagem.trim()) return;
+
+      botao.disabled = true;
+      api.post('/conversas', {
+        empresa_id: p.vendedor.id,
+        assunto: p.name,
+        mensagem: mensagem.trim(),
+      })
+        .then(function (r) {
+          ui.notificar(r.mensagem + ' Veja as respostas em A minha conta → Mensagens.', 'ok');
+        })
+        .catch(function (e) { ui.notificar(e.message, 'erro'); })
+        .then(function () { botao.disabled = false; });
+    });
+  }
+
   function desenhar(p, relacionados, avaliacoes) {
     document.title = p.name + ' — TeskBuy';
     var antigo = Number(p.compare_at_price || 0);
@@ -238,7 +266,9 @@
         '</div>' +
         '<p class="pequeno silenciado" style="margin-top:22px">' +
           'Alguma coisa errada com este artigo? ' +
-          '<button class="pilula" id="btn-denunciar">Denunciar produto</button></p>' +
+          '<button class="pilula" id="btn-denunciar">Denunciar produto</button>' +
+          (p.vendedor ? ' <button class="pilula" id="btn-falar">Falar com o vendedor</button>' : '') +
+        '</p>' +
       '</section>' +
 
       (relacionados.length
@@ -297,6 +327,7 @@
       relacionados.forEach(function (x) { porId[x.id] = x; });
       ui.ligarAccoesProduto(relacionadosEl, porId);
       ligarDenuncia(p);
+      ligarConversa(p);
     }
 
     montarFormularioAvaliacao(p);
