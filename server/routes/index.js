@@ -52,6 +52,7 @@ router.use('/parceiros', require('./parceiros.routes'));
 router.use('/comerciante', require('./comerciante.routes'));
 router.use('/ficheiros', require('./ficheiros.routes'));
 router.use('/afiliados', require('./afiliados.routes'));
+router.use('/suporte', require('./suporte.routes'));
 router.use('/admin', require('./admin.routes'));
 
 router.post('/newsletter', capturar(async (req, res) => {

@@ -31,6 +31,7 @@
       { id: 'encomendas', nome: 'Encomendas' },
       { id: 'afiliados', nome: 'Afiliados' },
       { id: 'avaliacoes', nome: 'Avaliações' },
+      { id: 'suporte', nome: 'Suporte' },
       { id: 'empresa', nome: 'A minha empresa' },
     ];
 
@@ -546,11 +547,107 @@
     }).catch(erroPainel);
   }
 
+  /* ── suporte: falar com a TeskBuy ────────────────────────── */
+  var CATEGORIAS = {
+    conta: 'Conta da empresa', produtos: 'Produtos', encomendas: 'Encomendas',
+    pagamentos: 'Pagamentos', comissoes: 'Comissões', afiliados: 'Afiliados',
+    reembolsos: 'Reembolsos', tecnico: 'Problema técnico',
+    contestacao: 'Contestar uma decisão', outro: 'Outro assunto',
+  };
+  var ESTADO_TK = {
+    aberto: 'Aberto', em_analise: 'Em análise', aguarda_empresa: 'À sua espera',
+    aguarda_admin: 'Com a TeskBuy', resolvido: 'Resolvido', fechado: 'Fechado',
+  };
+
+  function verSuporte() {
+    esqueleto(2);
+    api.get('/comerciante/tickets').then(function (r) {
+      var itens = r.dados || [];
+
+      document.getElementById('painel-parceiro').innerHTML =
+        '<h1 style="margin-bottom:4px">Suporte</h1>' +
+        '<p class="silenciado pequeno" style="margin-bottom:16px">' +
+          'Este é o canal directo com a administração da TeskBuy.</p>' +
+
+        '<div class="cartao" style="margin-bottom:18px">' +
+          '<h3 style="margin-bottom:12px">Nova solicitação</h3>' +
+          '<div class="campo-duplo">' +
+            '<div class="campo"><label for="t-assunto">Assunto</label><input id="t-assunto"></div>' +
+            '<div class="campo"><label for="t-cat">Categoria</label><select id="t-cat">' +
+              Object.keys(CATEGORIAS).map(function (k) {
+                return '<option value="' + k + '">' + CATEGORIAS[k] + '</option>';
+              }).join('') +
+            '</select></div>' +
+          '</div>' +
+          '<div class="campo"><label for="t-msg">Mensagem</label><textarea id="t-msg" rows="3"></textarea></div>' +
+          '<button class="btn btn-principal" id="t-abrir">Abrir solicitação</button>' +
+        '</div>' +
+
+        (itens.length
+          ? itens.map(function (t) {
+              return '<div class="cartao" style="margin-bottom:12px">' +
+                '<div class="entre" style="margin-bottom:8px">' +
+                  '<div><span class="mono pequeno silenciado">' + ui.escapar(t.numero) + '</span><br>' +
+                    '<strong>' + ui.escapar(t.assunto) + '</strong></div>' +
+                  '<span class="selo selo-usado" style="position:static">' +
+                    ui.escapar(ESTADO_TK[t.estado] || t.estado) + '</span>' +
+                '</div>' +
+                '<div style="margin:10px 0">' +
+                  t.mensagens.map(function (m) {
+                    return '<div style="padding:8px 0;border-bottom:1px solid rgba(238,247,248,.06)">' +
+                      '<p class="pequeno silenciado">' + (m.da_equipa ? 'TeskBuy' : ui.escapar(m.autor)) +
+                        ' · ' + ui.data(m.criada_em, true) + '</p>' +
+                      '<p class="pequeno" style="margin-top:4px">' + ui.escapar(m.texto) + '</p>' +
+                    '</div>';
+                  }).join('') +
+                '</div>' +
+                (t.estado !== 'fechado' && t.estado !== 'resolvido'
+                  ? '<div class="campo"><label for="tr-' + t.id + '">Responder</label>' +
+                      '<textarea id="tr-' + t.id + '" rows="2"></textarea></div>' +
+                    '<button class="btn btn-secundario btn-pequeno" data-tresp="' + t.id + '">Enviar</button>'
+                  : '') +
+              '</div>';
+            }).join('')
+          : '<div class="cartao-vazio"><h3>Sem solicitações</h3>' +
+            '<p class="silenciado">Abra uma acima quando precisar de nós.</p></div>');
+
+      document.getElementById('t-abrir').addEventListener('click', function (ev) {
+        var botao = ev.currentTarget;
+        var assunto = document.getElementById('t-assunto').value.trim();
+        var mensagem = document.getElementById('t-msg').value.trim();
+        if (assunto.length < 3 || mensagem.length < 5) {
+          return ui.notificar('Escreva o assunto e a mensagem.', 'erro');
+        }
+        botao.disabled = true;
+        api.post('/comerciante/tickets', {
+          assunto: assunto,
+          categoria: document.getElementById('t-cat').value,
+          mensagem: mensagem,
+        })
+          .then(function (res) { ui.notificar(res.mensagem, 'ok'); verSuporte(); })
+          .catch(function (e) { ui.notificar(e.message, 'erro'); botao.disabled = false; });
+      });
+
+      document.querySelectorAll('[data-tresp]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          var id = b.getAttribute('data-tresp');
+          var campo = document.getElementById('tr-' + id);
+          if (!campo || !campo.value.trim()) return ui.notificar('Escreva a mensagem.', 'erro');
+          b.disabled = true;
+          api.post('/comerciante/tickets/' + id + '/mensagens', { mensagem: campo.value.trim() })
+            .then(function (res) { ui.notificar(res.mensagem, 'ok'); verSuporte(); })
+            .catch(function (e) { ui.notificar(e.message, 'erro'); b.disabled = false; });
+        });
+      });
+    }).catch(erroPainel);
+  }
+
   function abrir() {
     if (vista === 'produtos') return verProdutos();
     if (vista === 'encomendas') return verEncomendas();
     if (vista === 'afiliados') return verAfiliados();
     if (vista === 'avaliacoes') return verAvaliacoes();
+    if (vista === 'suporte') return verSuporte();
     if (vista === 'empresa') return verEmpresa();
     return verResumo();
   }

@@ -23,6 +23,11 @@ const af = require('../controllers/afiliados.controller');
 router.get('/afiliados', af.parceriasDaEmpresa);
 router.patch('/afiliados/:id', validar({ params: e.paramsId, body: e.decisaoParceriaEmpresa }), af.decidirEmpresa);
 
+const sp = require('../controllers/suporte.controller');
+router.get('/tickets', sp.meusTickets);
+router.post('/tickets', validar({ body: e.novoTicket }), sp.abrirTicket);
+router.post('/tickets/:id/mensagens', validar({ params: e.paramsId, body: e.mensagemTicket }), sp.responderEmpresa);
+
 router.get('/avaliacoes', c.listarAvaliacoes);
 router.post('/avaliacoes/:id/resposta', validar({ params: e.paramsId, body: e.respostaAvaliacao }), c.responderAvaliacao);
 

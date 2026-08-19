@@ -150,6 +150,8 @@
       { id: 'cupoes', nome: 'Cupões' },
       { id: 'candidaturas', nome: 'Candidaturas' },
       { id: 'parcerias', nome: 'Parcerias' },
+      { id: 'denuncias', nome: 'Denúncias' },
+      { id: 'tickets', nome: 'Suporte' },
     ];
     if (eu.papel === 'admin') itens.push({ id: 'utilizadores', nome: 'Utilizadores' });
     if (eu.papel === 'admin') itens.push({ id: 'conteudo', nome: 'Conteúdo' });
@@ -1257,6 +1259,191 @@
       });
   }
 
+  /* ── denúncias ───────────────────────────────────────────── */
+  var MOTIVOS = {
+    mau_estado: 'Recebido em mau estado',
+    diferente_descricao: 'Diferente da descrição',
+    falsificado: 'Falsificado ou suspeito',
+    danificado: 'Danificado',
+    ma_qualidade: 'Problemas de qualidade',
+    nao_recebido: 'Não recebido',
+    informacao_enganosa: 'Informação enganosa',
+    outro: 'Outro motivo',
+  };
+  var ESTADO_DEN = {
+    nova: 'Nova', em_analise: 'Em análise', resolvida: 'Resolvida', rejeitada: 'Rejeitada',
+  };
+
+  function verDenuncias(estado) {
+    esqueleto(2);
+    var filtro = estado === undefined ? 'nova' : estado;
+
+    api.get('/admin/denuncias', { estado: filtro || undefined, limite: 50 })
+      .then(function (r) {
+        var itens = r.dados || [];
+        var filtros = ['nova', 'em_analise', 'resolvida', 'rejeitada', ''].map(function (f) {
+          return '<button class="pilula' + (f === filtro ? ' activa' : '') + '" data-dfiltro="' + f + '">' +
+            (f ? ESTADO_DEN[f] : 'Todas') + '</button>';
+        }).join('');
+
+        document.getElementById('painel-admin').innerHTML =
+          '<h1 style="margin-bottom:4px">Denúncias</h1>' +
+          '<p class="silenciado pequeno" style="margin-bottom:16px">' +
+            'Problemas comunicados por clientes sobre produtos e encomendas.</p>' +
+          '<div class="pilulas" style="margin-bottom:18px">' + filtros + '</div>' +
+          (itens.length
+            ? itens.map(cartaoDenuncia).join('')
+            : '<div class="cartao-vazio"><h3>Nada neste estado</h3>' +
+              '<p class="silenciado">Não há denúncias para mostrar.</p></div>');
+
+        document.querySelectorAll('[data-dfiltro]').forEach(function (b) {
+          b.addEventListener('click', function () { verDenuncias(b.getAttribute('data-dfiltro')); });
+        });
+        document.querySelectorAll('[data-danexo]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            b.disabled = true;
+            api.get('/ficheiros/documento', { caminho: b.getAttribute('data-danexo') })
+              .then(function (res) { window.open(res.dados.url, '_blank', 'noopener'); })
+              .catch(function (e) { ui.notificar(e.message, 'erro'); })
+              .then(function () { b.disabled = false; });
+          });
+        });
+        document.querySelectorAll('[data-destado]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            var id = b.getAttribute('data-did');
+            var texto = document.getElementById('dr-' + id);
+            b.disabled = true;
+            api.patch('/admin/denuncias/' + id, {
+              estado: b.getAttribute('data-destado'),
+              resolucao: texto && texto.value.trim() ? texto.value.trim() : undefined,
+            })
+              .then(function (res) { ui.notificar(res.mensagem, 'ok'); verDenuncias(filtro); })
+              .catch(function (e) { ui.notificar(e.message, 'erro'); b.disabled = false; });
+          });
+        });
+      })
+      .catch(erroPainel);
+  }
+
+  function cartaoDenuncia(d) {
+    var aberta = d.estado === 'nova' || d.estado === 'em_analise';
+    return '<div class="cartao" style="margin-bottom:14px">' +
+      '<div class="entre" style="margin-bottom:8px">' +
+        '<strong>' + ui.escapar(MOTIVOS[d.motivo] || d.motivo) + '</strong>' +
+        '<span class="pequeno silenciado">' + ui.data(d.criada_em, true) + '</span>' +
+      '</div>' +
+      '<p class="pequeno silenciado">' +
+        ui.escapar(d.autor ? (d.autor.full_name || d.autor.email) : '—') +
+        (d.produto ? ' · produto: ' + ui.escapar(d.produto.name) : '') +
+        (d.empresa ? ' · empresa: ' + ui.escapar(d.empresa.name) : ' · venda própria') +
+        (d.encomenda ? ' · ' + ui.escapar(d.encomenda.order_number) : '') +
+      '</p>' +
+      (d.descricao ? '<p style="margin-top:10px">' + ui.escapar(d.descricao) + '</p>' : '') +
+      (d.anexos && d.anexos.length
+        ? '<div class="linha-flex" style="margin-top:10px">' +
+            d.anexos.map(function (a, n) {
+              return '<button class="pilula" data-danexo="' + ui.escapar(a.storage_path) + '">Anexo ' + (n + 1) + '</button>';
+            }).join('') +
+          '</div>'
+        : '') +
+      (aberta
+        ? '<div class="campo" style="margin:12px 0 10px">' +
+            '<label for="dr-' + d.id + '">Resposta ao cliente</label>' +
+            '<input id="dr-' + d.id + '" placeholder="O que foi feito. Chega-lhe por notificação."></div>' +
+          '<div class="linha-flex">' +
+            '<button class="btn btn-principal btn-pequeno" data-destado="resolvida" data-did="' + d.id + '">Resolver</button>' +
+            '<button class="btn btn-secundario btn-pequeno" data-destado="em_analise" data-did="' + d.id + '">Em análise</button>' +
+            '<button class="btn btn-fantasma btn-pequeno" data-destado="rejeitada" data-did="' + d.id + '">Rejeitar</button>' +
+          '</div>'
+        : '<p class="pequeno" style="margin-top:10px"><span class="silenciado">' +
+            ui.escapar(ESTADO_DEN[d.estado]) + ':</span> ' + ui.escapar(d.resolucao || '—') + '</p>') +
+    '</div>';
+  }
+
+  /* ── tickets das empresas ────────────────────────────────── */
+  var ESTADO_TK = {
+    aberto: 'Aberto', em_analise: 'Em análise', aguarda_empresa: 'Com a empresa',
+    aguarda_admin: 'Connosco', resolvido: 'Resolvido', fechado: 'Fechado',
+  };
+
+  function verTickets(estado) {
+    esqueleto(2);
+    var filtro = estado === undefined ? '' : estado;
+
+    api.get('/admin/tickets', { estado: filtro || undefined, limite: 50 })
+      .then(function (r) {
+        var itens = r.dados || [];
+        var filtros = ['', 'aguarda_admin', 'aguarda_empresa', 'resolvido', 'fechado'].map(function (f) {
+          return '<button class="pilula' + (f === filtro ? ' activa' : '') + '" data-tfiltro="' + f + '">' +
+            (f ? ESTADO_TK[f] : 'Todos') + '</button>';
+        }).join('');
+
+        document.getElementById('painel-admin').innerHTML =
+          '<h1 style="margin-bottom:4px">Suporte às empresas</h1>' +
+          '<p class="silenciado pequeno" style="margin-bottom:16px">' +
+            'Solicitações abertas pelos parceiros. Clientes e afiliados não têm acesso a este canal.</p>' +
+          '<div class="pilulas" style="margin-bottom:18px">' + filtros + '</div>' +
+          (itens.length
+            ? itens.map(cartaoTicket).join('')
+            : '<div class="cartao-vazio"><h3>Sem solicitações</h3>' +
+              '<p class="silenciado">Nada à espera de resposta.</p></div>');
+
+        document.querySelectorAll('[data-tfiltro]').forEach(function (b) {
+          b.addEventListener('click', function () { verTickets(b.getAttribute('data-tfiltro')); });
+        });
+        document.querySelectorAll('[data-tresp]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            var id = b.getAttribute('data-tresp');
+            var campo = document.getElementById('tm-' + id);
+            if (!campo || campo.value.trim().length < 1) return ui.notificar('Escreva a resposta.', 'erro');
+            b.disabled = true;
+            api.post('/admin/tickets/' + id + '/mensagens', { mensagem: campo.value.trim() })
+              .then(function (res) { ui.notificar(res.mensagem, 'ok'); verTickets(filtro); })
+              .catch(function (e) { ui.notificar(e.message, 'erro'); b.disabled = false; });
+          });
+        });
+        document.querySelectorAll('[data-tfechar]').forEach(function (b) {
+          b.addEventListener('click', function () {
+            b.disabled = true;
+            api.patch('/admin/tickets/' + b.getAttribute('data-tfechar'), { estado: 'resolvido' })
+              .then(function (res) { ui.notificar(res.mensagem, 'ok'); verTickets(filtro); })
+              .catch(function (e) { ui.notificar(e.message, 'erro'); b.disabled = false; });
+          });
+        });
+      })
+      .catch(erroPainel);
+  }
+
+  function cartaoTicket(t) {
+    return '<div class="cartao" style="margin-bottom:14px">' +
+      '<div class="entre" style="margin-bottom:8px">' +
+        '<div><span class="mono pequeno silenciado">' + ui.escapar(t.numero) + '</span><br>' +
+          '<strong>' + ui.escapar(t.assunto) + '</strong></div>' +
+        '<span class="selo selo-usado" style="position:static">' +
+          ui.escapar(ESTADO_TK[t.estado] || t.estado) + '</span>' +
+      '</div>' +
+      '<p class="pequeno silenciado">' + ui.escapar(t.empresa ? t.empresa.name : '—') +
+        ' · ' + ui.escapar(t.categoria) + '</p>' +
+      '<div style="margin:12px 0">' +
+        t.mensagens.map(function (m) {
+          return '<div style="padding:8px 0;border-bottom:1px solid rgba(238,247,248,.06)">' +
+            '<p class="pequeno silenciado">' + ui.escapar(m.autor) +
+              (m.da_equipa ? ' · TeskBuy' : '') + ' · ' + ui.data(m.criada_em, true) + '</p>' +
+            '<p class="pequeno" style="margin-top:4px">' + ui.escapar(m.texto) + '</p>' +
+          '</div>';
+        }).join('') +
+      '</div>' +
+      (t.estado !== 'fechado'
+        ? '<div class="campo"><label for="tm-' + t.id + '">Responder</label>' +
+            '<textarea id="tm-' + t.id + '" rows="2"></textarea></div>' +
+          '<div class="linha-flex">' +
+            '<button class="btn btn-principal btn-pequeno" data-tresp="' + t.id + '">Enviar</button>' +
+            '<button class="btn btn-fantasma btn-pequeno" data-tfechar="' + t.id + '">Marcar resolvido</button>' +
+          '</div>'
+        : '') +
+    '</div>';
+  }
+
   function abrir() {
     if (vista === 'encomendas') return verEncomendas();
     if (vista === 'produtos') return verProdutos();
@@ -1264,6 +1451,8 @@
     if (vista === 'cupoes') return verCupoes();
     if (vista === 'candidaturas') return verCandidaturas();
     if (vista === 'parcerias') return verParcerias();
+    if (vista === 'denuncias') return verDenuncias();
+    if (vista === 'tickets') return verTickets();
     if (vista === 'utilizadores' && eu.papel === 'admin') return verUtilizadores();
     if (vista === 'conteudo' && eu.papel === 'admin') return verConteudo();
     return verPainel();

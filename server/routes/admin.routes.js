@@ -38,6 +38,14 @@ const af = require('../controllers/afiliados.controller');
 router.get('/parcerias', validar({ query: e.paginacao }), af.listarParcerias);
 router.patch('/parcerias/:id', exigirAdmin, validar({ params: e.paramsId, body: e.decisaoParceriaAdmin }), af.decidirAdmin);
 
+// Denúncias e tickets
+const sp = require('../controllers/suporte.controller');
+router.get('/denuncias', validar({ query: e.paginacao }), sp.listarDenuncias);
+router.patch('/denuncias/:id', validar({ params: e.paramsId, body: e.tratarDenuncia }), sp.tratarDenuncia);
+router.get('/tickets', validar({ query: e.paginacao }), sp.listarTickets);
+router.post('/tickets/:id/mensagens', validar({ params: e.paramsId, body: e.mensagemTicket }), sp.responderEquipa);
+router.patch('/tickets/:id', validar({ params: e.paramsId, body: e.estadoTicket }), sp.mudarEstadoTicket);
+
 router.put('/definicoes/:chave', exigirAdmin, c.guardarDefinicao);
 
 module.exports = router;

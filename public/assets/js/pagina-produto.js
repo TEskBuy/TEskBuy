@@ -37,6 +37,77 @@
         '<a class="btn btn-principal" href="/loja">Ver outros produtos</a></div>';
     });
 
+  var MOTIVOS_DENUNCIA = {
+    mau_estado: 'Recebi em mau estado',
+    diferente_descricao: 'Diferente da descrição',
+    falsificado: 'Parece falsificado',
+    danificado: 'Chegou danificado',
+    ma_qualidade: 'Problemas de qualidade',
+    nao_recebido: 'Não recebi',
+    informacao_enganosa: 'Informação enganosa',
+    outro: 'Outro motivo',
+  };
+
+  /** Caixa de denúncia. Sem sessão, manda-se entrar primeiro. */
+  function ligarDenuncia(p) {
+    var botao = document.getElementById('btn-denunciar');
+    if (!botao) return;
+
+    botao.addEventListener('click', function () {
+      if (!api.sessao.activa()) {
+        location.href = '/entrar?voltar=' + encodeURIComponent(location.pathname + location.search);
+        return;
+      }
+
+      var fundo = document.createElement('div');
+      fundo.className = 'modal-fundo';
+      fundo.style.cssText = 'position:fixed;inset:0;background:rgba(3,20,26,.72);' +
+        'display:flex;align-items:center;justify-content:center;padding:20px;z-index:90';
+      fundo.innerHTML =
+        '<div style="background:var(--teal-deep);border:1px solid var(--linha-forte);' +
+          'border-radius:var(--raio);padding:24px;width:min(520px,100%)">' +
+          '<h2 style="font-size:19px;margin-bottom:6px">Denunciar produto</h2>' +
+          '<p class="pequeno silenciado" style="margin-bottom:16px">' +
+            ui.escapar(p.name) + '</p>' +
+          '<div class="campo"><label for="dn-motivo">Motivo</label>' +
+            '<select id="dn-motivo">' +
+              Object.keys(MOTIVOS_DENUNCIA).map(function (k) {
+                return '<option value="' + k + '">' + MOTIVOS_DENUNCIA[k] + '</option>';
+              }).join('') +
+            '</select></div>' +
+          '<div class="campo"><label for="dn-desc">O que aconteceu</label>' +
+            '<textarea id="dn-desc" rows="4" placeholder="Descreva o problema."></textarea></div>' +
+          '<div class="linha-flex" style="justify-content:flex-end">' +
+            '<button class="btn btn-fantasma" id="dn-cancelar">Cancelar</button>' +
+            '<button class="btn btn-principal" id="dn-enviar">Enviar denúncia</button>' +
+          '</div>' +
+        '</div>';
+
+      document.body.appendChild(fundo);
+      function fechar() { fundo.remove(); }
+      fundo.querySelector('#dn-cancelar').addEventListener('click', fechar);
+      fundo.addEventListener('click', function (ev) { if (ev.target === fundo) fechar(); });
+
+      fundo.querySelector('#dn-enviar').addEventListener('click', function (ev) {
+        var b = ev.currentTarget;
+        b.disabled = true;
+        b.textContent = 'A enviar…';
+
+        api.post('/suporte/denuncias', {
+          produto_id: p.id,
+          motivo: fundo.querySelector('#dn-motivo').value,
+          descricao: fundo.querySelector('#dn-desc').value.trim() || undefined,
+        })
+          .then(function (r) { ui.notificar(r.mensagem, 'ok'); fechar(); })
+          .catch(function (e) {
+            ui.notificar(e.message, 'erro');
+            b.disabled = false;
+            b.textContent = 'Enviar denúncia';
+          });
+      });
+    });
+  }
+
   function desenhar(p, relacionados, avaliacoes) {
     document.title = p.name + ' — TeskBuy';
     var antigo = Number(p.compare_at_price || 0);
@@ -165,6 +236,9 @@
             : '<p class="silenciado">Ainda ninguém avaliou este artigo. Seja o primeiro depois de comprar.</p>') +
           '<div id="area-avaliar" style="margin-top:24px"></div>' +
         '</div>' +
+        '<p class="pequeno silenciado" style="margin-top:22px">' +
+          'Alguma coisa errada com este artigo? ' +
+          '<button class="pilula" id="btn-denunciar">Denunciar produto</button></p>' +
       '</section>' +
 
       (relacionados.length
@@ -222,6 +296,7 @@
       var porId = {};
       relacionados.forEach(function (x) { porId[x.id] = x; });
       ui.ligarAccoesProduto(relacionadosEl, porId);
+      ligarDenuncia(p);
     }
 
     montarFormularioAvaliacao(p);
