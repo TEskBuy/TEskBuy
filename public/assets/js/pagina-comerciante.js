@@ -432,7 +432,16 @@
           '<input type="file" id="e-logo-ficheiro" accept="image/*">' +
           '<span class="ajuda" id="e-logo-estado">PNG ou JPG, até 5 MB.</span></div>' +
         campo('e-logo', 'Endereço do logótipo', e.logo_url) +
+        '<div class="campo"><label for="e-capa-ficheiro">Carregar foto de capa</label>' +
+          '<input type="file" id="e-capa-ficheiro" accept="image/*">' +
+          '<span class="ajuda" id="e-capa-estado">A faixa larga do seu perfil público. ' +
+          'Fica melhor com uma imagem deitada, 1600×500 ou parecido.</span></div>' +
+        campo('e-capa', 'Endereço da capa', e.cover_url) +
         campo('e-desc', 'Descrição', e.description, { area: true, linhas: 3 }) +
+        '<p class="pequeno silenciado" style="margin:-6px 0 16px">' +
+          'É assim que os clientes o vêem: ' +
+          '<a href="/empresa?slug=' + encodeURIComponent(e.slug || '') + '" target="_blank" rel="noopener" ' +
+          'style="color:var(--orange-soft)">ver o meu perfil público</a>.</p>' +
         '<button class="btn btn-principal" id="e-guardar">Guardar</button>' +
       '</div>';
 
@@ -453,6 +462,23 @@
         });
     });
 
+    document.getElementById('e-capa-ficheiro').addEventListener('change', function (ev) {
+      var f = (ev.target.files || [])[0];
+      if (!f) return;
+      var estado = document.getElementById('e-capa-estado');
+      estado.textContent = 'A enviar…';
+
+      ui.carregarFicheiro(f, 'logotipo')
+        .then(function (r) {
+          document.getElementById('e-capa').value = r.url;
+          estado.textContent = 'Capa carregada. Não se esqueça de guardar.';
+        })
+        .catch(function (e2) {
+          estado.textContent = e2.message || 'Não foi possível enviar.';
+          ui.notificar(e2.message || 'Não foi possível enviar a capa.', 'erro');
+        });
+    });
+
     document.getElementById('e-guardar').addEventListener('click', function (ev) {
       var botao = ev.currentTarget;
       function val(id) { return document.getElementById(id).value.trim(); }
@@ -467,6 +493,7 @@
         municipality: val('e-mun'),
         address: val('e-morada'),
         logo_url: val('e-logo'),
+        cover_url: val('e-capa'),
         description: val('e-desc'),
       };
       Object.keys(corpo).forEach(function (k) { if (!corpo[k]) delete corpo[k]; });

@@ -180,10 +180,15 @@
             '<span class="mono">SKU ' + ui.escapar(p.sku) + '</span>' +
           '</div>' +
 
-          // quem vende: a própria loja, ou uma empresa parceira
+          // quem vende: a própria loja, ou uma empresa parceira.
+          // Sendo parceira, o nome leva ao perfil dela.
           '<p class="pequeno" style="margin:-10px 0 18px">' +
-            '<span class="silenciado">Vendido por</span> <strong>' +
-            ui.escapar(p.vendedor ? p.vendedor.name : 'TEskBuy') + '</strong>' +
+            '<span class="silenciado">Vendido por</span> ' +
+            (p.vendedor
+              ? '<a href="/empresa?slug=' + encodeURIComponent(p.vendedor.slug) + '" ' +
+                'style="color:var(--orange-soft);text-decoration:none"><strong>' +
+                ui.escapar(p.vendedor.name) + '</strong></a>'
+              : '<strong>TEskBuy</strong>') +
             (p.vendedor && p.vendedor.rating_count
               ? ' <span class="silenciado">· ' + Number(p.vendedor.rating).toFixed(1) + '/5 em ' +
                 p.vendedor.rating_count + ' avaliação(ões)</span>'

@@ -770,3 +770,104 @@ body.sem-rolagem .convite{ display:none; }
   body.fora-do-inicio #btn-procura-movel,
   body.fora-do-inicio .accoes .accao-carrinho{ display:none; }
 }
+
+/* ============================================================
+   Perfil público do vendedor
+   ============================================================ */
+.perfil-capa{ position:relative; width:100%; overflow:hidden; background: var(--teal-deep); }
+.perfil-capa .capa-img,
+.perfil-capa .capa-vazia{
+  display:block; width:100%; height: clamp(180px, 26vw, 340px); object-fit:cover;
+}
+.capa-vazia{
+  background:
+    radial-gradient(900px 300px at 20% 120%, rgba(242,102,13,0.28), transparent 65%),
+    radial-gradient(700px 280px at 85% -10%, rgba(18,131,158,0.35), transparent 60%),
+    linear-gradient(135deg, #0a3947, #06303c);
+}
+.perfil-veu{
+  position:absolute; inset:auto 0 0 0; height:60%;
+  background: linear-gradient(to top, var(--fundo), transparent);
+  pointer-events:none;
+}
+
+.perfil-cabecalho{
+  display:flex; align-items:flex-end; gap:22px; flex-wrap:wrap;
+  margin-top:-58px; position:relative; z-index:2; padding-bottom:6px;
+}
+.perfil-logo{
+  width:128px; height:128px; border-radius:22px; object-fit:cover; flex-shrink:0;
+  border:4px solid var(--fundo); background: var(--surface);
+  box-shadow: 0 10px 30px rgba(2,18,24,0.5);
+}
+.perfil-logo-letra{
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:52px;
+  color: var(--teal-deep); background: var(--orange);
+}
+.perfil-identidade{ flex:1 1 320px; min-width:0; padding-bottom:4px; }
+.perfil-identidade h1{ font-size: clamp(24px, 3vw, 34px); line-height:1.15; }
+.perfil-meta{
+  display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-top:8px; font-size:13.5px;
+}
+.perfil-nota{ display:inline-flex; align-items:center; gap:6px; }
+.perfil-nota b{ font-size:14.5px; }
+.perfil-nota small{ color: var(--ink-dim); }
+.perfil-local{ display:inline-flex; align-items:center; gap:5px; color: var(--ink-dim); }
+.perfil-local svg{ width:15px; height:15px; color: var(--orange); }
+.perfil-sobre{
+  margin-top:12px; color: var(--ink-dim); font-size:14.5px; line-height:1.6; max-width:640px;
+}
+.perfil-accoes{ display:flex; gap:10px; flex-wrap:wrap; padding-bottom:6px; }
+
+.estrela{ display:inline-flex; color: rgba(238,247,248,0.25); }
+.estrela svg{ width:14px; height:14px; }
+.estrela.cheia{ color: var(--orange); }
+
+/* ── lista de vendedores ───────────────────────────────────── */
+.vendedores-grelha{
+  display:grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap:16px;
+}
+.vendedor-cartao{
+  display:block; text-decoration:none; overflow:hidden; border-radius: var(--raio);
+  border:1px solid var(--linha); background: var(--surface);
+  transition: border-color .2s, transform .2s;
+}
+.vendedor-cartao:hover{ border-color: var(--orange); transform: translateY(-2px); }
+.vendedor-capa{ height:96px; overflow:hidden; }
+.vendedor-capa img, .vendedor-capa .capa-vazia{ width:100%; height:96px; object-fit:cover; display:block; }
+.vendedor-corpo{ padding:0 16px 16px; margin-top:-30px; }
+.vendedor-logo{
+  display:block; width:56px; height:56px; border-radius:14px; object-fit:cover;
+  border:3px solid var(--surface); background: var(--teal-deep); margin-bottom:10px;
+}
+.vendedor-logo-letra{
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:22px;
+  color: var(--teal-deep); background: var(--orange); border-color: var(--surface);
+}
+.vendedor-corpo strong{ display:block; font-size:15.5px; color: var(--ink); }
+.vendedor-meta{ display:flex; gap:12px; flex-wrap:wrap; margin-top:6px; font-size:12.5px; color: var(--ink-dim); }
+.vendedor-local{
+  display:inline-flex; align-items:center; gap:5px; margin-top:8px;
+  font-size:12.5px; color: var(--ink-dim);
+}
+.vendedor-local svg{ width:14px; height:14px; color: var(--orange); }
+
+@media (max-width: 700px){
+  .perfil-cabecalho{ margin-top:-42px; gap:14px; }
+  .perfil-logo{ width:92px; height:92px; border-radius:18px; }
+  .perfil-logo-letra{ font-size:38px; }
+  .perfil-accoes{ width:100%; }
+  .perfil-accoes .btn{ flex:1 1 auto; }
+}
+
+/* ── cabeçalho mais largo: os ícones encostam mais à direita ──
+   O interior deixa de ficar preso aos 1200px do resto da página. */
+.cabecalho-int{ width:min(1560px, 96vw); margin-inline:auto; }
+.accoes{ margin-left:4px; }
+
+/* separador ligeiro entre a procura e o grupo de ícones */
+@media (min-width: 1121px){
+  .accoes{ padding-left:8px; border-left:1px solid var(--linha); margin-left:10px; }
+}

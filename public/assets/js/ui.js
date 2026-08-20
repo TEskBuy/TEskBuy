@@ -179,12 +179,15 @@
 
     var vendedor = ehVendedor(perfil);
     var afiliado = ehAfiliado(perfil);
+    // quem é da equipa gere o marketplace, não se candidata a ele
+    var equipa = u.papel === 'admin' || u.papel === 'gestor';
     var html = item('/conta', ico.conta, 'A minha conta');
+    if (equipa) html += item('/admin', ico.escudo, 'Painel de gestão');
 
     if (vendedor) html += item('/comerciante', ico.camiao, 'Área de Vendas');
     if (afiliado) html += item('/afiliado', ico.estrela, 'Área de Afiliado');
     // quem ainda não é nem uma coisa nem outra vê os dois convites
-    if (!afiliado && !vendedor) {
+    if (!afiliado && !vendedor && !equipa) {
       html += item('/parceiro?tipo=afiliado', ico.estrela, 'Tornar-se Afiliado');
       html += item('/parceiro', ico.camiao, 'Vender na TEskBuy');
     }
@@ -284,7 +287,9 @@
           '<button class="icone-btn" id="btn-procura-movel" aria-label="Procurar">' + ico.procurar + '</button>' +
           // o sino só existe para quem tem sessão
           (u
-            ? '<button class="icone-btn" id="btn-sino" aria-label="Notificações">' + ico.sino +
+            ? '<a class="icone-btn" id="btn-mensagens" href="/conta?sep=mensagens" aria-label="Mensagens">' +
+                ico.correio + '<span class="crachas" id="crachas-mensagens"></span></a>' +
+              '<button class="icone-btn" id="btn-sino" aria-label="Notificações">' + ico.sino +
                 '<span class="crachas" id="crachas-sino"></span></button>'
             : '') +
           // o carrinho fica sempre à vista: quem entra de novo tem de poder comprar
@@ -327,7 +332,7 @@
 
     ligarPainelCategorias();
 
-    if (u) ligarSino();
+    if (u) { ligarSino(); contarMensagens(); }
 
     // contactos reais do painel, assim que chegarem
     conteudo(function (c) {
@@ -378,6 +383,7 @@
                 '</a>';
               }).join('') +
             '</div>' +
+            '<a class="cat-tudo" href="/vendedores">Ver vendedores' + ico.seta + '</a>' +
             '<a class="cat-tudo" href="/loja">Ver toda a loja' + ico.seta + '</a>'
           : '<a class="cat-tudo" href="/loja">Ver toda a loja' + ico.seta + '</a>';
       }
@@ -390,6 +396,7 @@
           return '<a class="nav-contacto" href="/loja?categoria=' + encodeURIComponent(c.slug) + '">' +
             '<span>' + escapar(c.name) + '</span></a>';
         }).join('') +
+        '<a class="nav-contacto" href="/vendedores">' + ico.camiao + '<span>Ver vendedores</span></a>' +
         '<a class="nav-contacto nav-ver-tudo" href="/loja"><span>Ver toda a loja</span>' + ico.seta + '</a>';
     });
 
@@ -496,6 +503,19 @@
     document.addEventListener('keydown', function (ev) {
       if (ev.key === 'Escape' && !painel.hidden) abrir(false);
     });
+  }
+
+  /* ── mensagens por ler, no ícone do cabeçalho ─────────────── */
+  function contarMensagens() {
+    var cracha = document.getElementById('crachas-mensagens');
+    if (!cracha) return;
+    api.get('/conversas/por-ler')
+      .then(function (r) {
+        var n = r.dados.total;
+        cracha.textContent = n > 99 ? '99+' : n;
+        cracha.classList.toggle('visivel', n > 0);
+      })
+      .catch(function () { /* sem sessão válida, fica calado */ });
   }
 
   /* ── sino de notificações ─────────────────────────────────

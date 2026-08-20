@@ -60,10 +60,13 @@
             }).join('') +
             '<a href="/encomendas">As minhas encomendas</a>' +
             '<a href="/favoritos">Favoritos</a>' +
-            // "Vender na TEskBuy" saiu do menu principal e vive aqui
+            // "Vender na TEskBuy" saiu do menu principal e vive aqui.
+            // A equipa não se candidata ao marketplace que gere.
             (contaEh().empresa
               ? '<a href="/comerciante">Área de Vendas</a>'
-              : '<a href="/parceiro">Vender na TEskBuy</a>') +
+              : (u.papel === 'admin' || u.papel === 'gestor'
+                  ? ''
+                  : '<a href="/parceiro">Vender na TEskBuy</a>')) +
             (contaEh().afiliado ? '<a href="/afiliado">Área de Afiliado</a>' : '') +
             (u.papel === 'admin' || u.papel === 'gestor' ? '<a href="/admin">Painel de gestão</a>' : '') +
             '<button id="terminar" style="color:#ff8a86">Terminar sessão</button>' +
