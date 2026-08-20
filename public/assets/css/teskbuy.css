@@ -767,8 +767,9 @@ body.sem-rolagem .convite{ display:none; }
    topo fica com a marca e a entrada; o carrinho continua a um toque,
    dentro da gaveta. */
 @media (max-width: 1120px){
-  body.fora-do-inicio #btn-procura-movel,
-  body.fora-do-inicio .accoes .accao-carrinho{ display:none; }
+  /* o carrinho ficou em todas as páginas: numa loja tem de estar sempre
+     à mão. Só a lupa é que é exclusiva da página inicial. */
+  body.fora-do-inicio #btn-procura-movel{ display:none; }
 }
 
 /* ============================================================
@@ -870,4 +871,136 @@ body.sem-rolagem .convite{ display:none; }
 /* separador ligeiro entre a procura e o grupo de ícones */
 @media (min-width: 1121px){
   .accoes{ padding-left:8px; border-left:1px solid var(--linha); margin-left:10px; }
+}
+
+/* ============================================================
+   Topo de perfil — conta, comerciante, afiliado e gestão
+   ============================================================ */
+.pf-topo{ position:relative; margin-bottom:26px; }
+.pf-capa{
+  height: clamp(120px, 16vw, 190px); width:100%; border-radius:0 0 var(--raio-l) var(--raio-l);
+  background:
+    radial-gradient(700px 240px at 15% 130%, rgba(242,102,13,0.42), transparent 62%),
+    linear-gradient(120deg, #0d5a6e, #12839e 55%, #0a3947);
+}
+.pf-linha{
+  display:flex; align-items:flex-end; gap:18px; flex-wrap:wrap;
+  margin-top:-52px; position:relative; z-index:2;
+}
+.pf-foto{ position:relative; flex-shrink:0; }
+.pf-foto img, .pf-letra{
+  display:block; width:112px; height:112px; border-radius:50%; object-fit:cover;
+  border:4px solid var(--fundo); background: var(--surface);
+  box-shadow: 0 8px 26px rgba(2,18,24,0.45);
+}
+.pf-letra{
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:44px;
+  color: var(--teal-deep); background: var(--orange);
+}
+.pf-camara{
+  position:absolute; right:2px; bottom:2px; width:34px; height:34px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
+  border:3px solid var(--fundo); background: var(--orange); color: var(--teal-deep);
+}
+.pf-camara:hover{ background: var(--orange-soft); }
+.pf-camara svg{ width:16px; height:16px; }
+.pf-camara:disabled{ opacity:.6; cursor:progress; }
+
+.pf-identidade{ flex:1 1 240px; min-width:0; padding-bottom:6px; }
+.pf-identidade h1{ font-size: clamp(22px, 2.6vw, 30px); line-height:1.15; }
+.pf-papel{
+  font-family:'IBM Plex Mono',monospace; font-size:11.5px; letter-spacing:0.12em;
+  text-transform:uppercase; color: var(--ink-dim); margin-top:6px;
+}
+
+.pf-numeros{
+  display:grid; grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+  gap:10px; margin-top:20px;
+}
+.pf-numero{
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  padding:14px 10px; border-radius: var(--raio);
+  border:1px solid var(--linha); background: var(--surface);
+}
+.pf-numero-ico{ display:flex; color: var(--orange); margin-bottom:2px; }
+.pf-numero-ico svg{ width:17px; height:17px; }
+.pf-numero b{ font-family:'Space Grotesk',sans-serif; font-size:20px; }
+.pf-numero span{ font-size:12px; color: var(--ink-dim); text-align:center; }
+
+.pf-atalhos{
+  display:grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap:8px; margin-top:14px; padding:14px 10px;
+  border:1px solid var(--linha); border-radius: var(--raio); background: var(--surface);
+}
+.pf-atalhos a{
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  text-decoration:none; color: var(--ink-dim); font-size:12.5px; text-align:center;
+  padding:4px; border-radius: var(--raio-s); transition: color .18s;
+}
+.pf-atalhos a:hover, .pf-atalhos a.activo{ color: var(--ink); }
+.pf-atalho-ico{
+  display:flex; align-items:center; justify-content:center;
+  width:46px; height:46px; border-radius:50%;
+  background: rgba(18,131,158,0.18); color: var(--teal-bright);
+  transition: background .18s, color .18s;
+}
+.pf-atalhos a:hover .pf-atalho-ico, .pf-atalhos a.activo .pf-atalho-ico{
+  background: rgba(242,102,13,0.18); color: var(--orange);
+}
+.pf-atalho-ico svg{ width:20px; height:20px; }
+
+.pf-contacto{
+  display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  margin-top:16px; font-size:13px; color: var(--ink-dim);
+}
+.pf-contacto svg{ width:16px; height:16px; color: var(--orange); }
+
+/* ── separadores horizontais, no lugar da barra lateral ────── */
+.pf-separadores{
+  display:flex; gap:4px; overflow-x:auto; padding:5px;
+  border:1px solid var(--linha); border-radius:999px;
+  background: var(--surface); margin:22px 0 24px;
+  -webkit-overflow-scrolling:touch; scrollbar-width:none;
+}
+.pf-separadores::-webkit-scrollbar{ display:none; }
+.pf-separadores button{
+  flex:1 0 auto; white-space:nowrap; cursor:pointer;
+  padding:10px 18px; border-radius:999px; border:none; background:transparent;
+  color: var(--ink-dim); font-family:inherit; font-size:13.5px; font-weight:500;
+  transition: background .18s, color .18s;
+}
+.pf-separadores button:hover{ color: var(--ink); }
+.pf-separadores button.activo{ background: var(--orange); color: var(--teal-deep); font-weight:600; }
+
+/* ── apoio e legal, no fim das definições ──────────────────── */
+.pf-legal{ border:1px solid var(--linha); border-radius: var(--raio); background: var(--surface); overflow:hidden; }
+.pf-legal h3{
+  display:flex; align-items:center; gap:9px; font-size:15px;
+  padding:16px 18px; border-bottom:1px solid var(--linha);
+}
+.pf-legal h3 svg{ width:18px; height:18px; color: var(--ink-dim); }
+.pf-legal a{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:15px 18px; text-decoration:none; color: var(--ink); font-size:14px;
+  border-bottom:1px solid var(--linha);
+}
+.pf-legal a:last-child{ border-bottom:none; }
+.pf-legal a:hover{ background: rgba(238,247,248,0.05); }
+.pf-legal a svg{ width:16px; height:16px; color: var(--ink-dim); transform: rotate(-90deg); }
+.btn-sair{
+  display:flex; align-items:center; justify-content:center; gap:9px; width:100%;
+  margin-top:14px; padding:14px; border-radius: var(--raio); cursor:pointer;
+  border:1px solid rgba(255,138,134,0.4); background: rgba(255,138,134,0.06);
+  color:#ff8a86; font-family:inherit; font-size:14.5px; font-weight:600;
+}
+.btn-sair:hover{ background: rgba(255,138,134,0.12); }
+
+@media (max-width: 700px){
+  .pf-linha{ margin-top:-40px; gap:12px; }
+  .pf-foto img, .pf-letra{ width:88px; height:88px; }
+  .pf-letra{ font-size:34px; }
+  .pf-numeros{ grid-template-columns: repeat(3, 1fr); }
+  .pf-atalhos{ grid-template-columns: repeat(4, 1fr); }
+  .pf-atalho-ico{ width:42px; height:42px; }
 }

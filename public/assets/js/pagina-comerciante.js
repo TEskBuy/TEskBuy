@@ -37,19 +37,30 @@
     ];
 
     conteudo.innerHTML =
-      '<div class="admin-grelha">' +
-        '<aside>' +
-          '<p class="eyebrow" style="margin-bottom:14px">Comerciante</p>' +
-          '<nav class="admin-menu">' +
-            itens.map(function (i) {
-              return '<button data-vista="' + i.id + '" class="' + (vista === i.id ? 'activo' : '') + '">' +
-                i.nome + (i.n ? '<span class="n">' + i.n + '</span>' : '') + '</button>';
-            }).join('') +
-          '</nav>' +
-          '<p class="pequeno silenciado" style="margin-top:18px;padding:0 14px">' +
-            ui.escapar(empresa.name) + '<br>Comissão da plataforma: ' +
-            Number(empresa.commission_rate) + '%</p>' +
-        '</aside>' +
+      ui.cabecalhoPerfil({
+        nome: empresa.name,
+        papel: 'Vendedor · comissão da plataforma ' + Number(empresa.commission_rate) + '%',
+        email: empresa.email,
+        foto: empresa.logo_url,
+        estatisticas: [
+          { valor: empresa.rating_count ? Number(empresa.rating).toFixed(1) : '—', rotulo: 'Avaliação', icone: ui.ico.estrela },
+          { valor: empresa.rating_count || 0, rotulo: 'Avaliações', icone: ui.ico.conta },
+          { valor: porAprovar || 0, rotulo: 'Por aprovar', icone: ui.ico.escudo },
+        ],
+        atalhos: [
+          { href: '/empresa?slug=' + encodeURIComponent(empresa.slug || ''), icone: ui.ico.local, texto: 'Perfil público' },
+          { href: '/conta', icone: ui.ico.conta, texto: 'A minha conta' },
+          { href: '/encomendas', icone: ui.ico.camiao, texto: 'Compras' },
+          { href: '/conta?sep=definicoes', icone: ui.ico.definicoes, texto: 'Definições' },
+        ],
+      }) +
+      '<div class="env">' +
+        '<div class="pf-separadores">' +
+          itens.map(function (i) {
+            return '<button data-vista="' + i.id + '" class="' + (vista === i.id ? 'activo' : '') + '">' +
+              i.nome + (i.n ? ' <span class="n">' + i.n + '</span>' : '') + '</button>';
+          }).join('') +
+        '</div>' +
         '<div id="painel-parceiro"></div>' +
       '</div>';
 

@@ -43,19 +43,32 @@
       { id: 'comissoes', nome: 'Comissões' },
     ];
 
+    var u = api.utilizador.obter() || {};
     conteudo.innerHTML =
-      '<div class="admin-grelha">' +
-        '<aside>' +
-          '<p class="eyebrow" style="margin-bottom:14px">Afiliado</p>' +
-          '<nav class="admin-menu">' +
-            itens.map(function (i) {
-              return '<button data-vista="' + i.id + '" class="' + (vista === i.id ? 'activo' : '') + '">' +
-                i.nome + '</button>';
-            }).join('') +
-          '</nav>' +
-          '<p class="pequeno silenciado" style="margin-top:18px;padding:0 14px">' +
-            'Código: <span class="mono">' + ui.escapar(eu.code) + '</span></p>' +
-        '</aside>' +
+      ui.cabecalhoPerfil({
+        nome: u.nome || 'Afiliado TEskBuy',
+        papel: 'Afiliado · código ' + (eu.code || ''),
+        email: u.email,
+        foto: u.avatar_url,
+        estatisticas: [
+          { valor: Number(eu.commission_rate || 0) + '%', rotulo: 'Comissão', icone: ui.ico.estrela },
+          { valor: eu.parcerias != null ? eu.parcerias : '—', rotulo: 'Parcerias', icone: ui.ico.camiao },
+          { valor: eu.vendas != null ? eu.vendas : '—', rotulo: 'Vendas', icone: ui.ico.cartao },
+        ],
+        atalhos: [
+          { href: '/vendedores', icone: ui.ico.local, texto: 'Vendedores' },
+          { href: '/conta', icone: ui.ico.conta, texto: 'A minha conta' },
+          { href: '/encomendas', icone: ui.ico.camiao, texto: 'Compras' },
+          { href: '/conta?sep=definicoes', icone: ui.ico.definicoes, texto: 'Definições' },
+        ],
+      }) +
+      '<div class="env">' +
+        '<div class="pf-separadores">' +
+          itens.map(function (i) {
+            return '<button data-vista="' + i.id + '" class="' + (vista === i.id ? 'activo' : '') + '">' +
+              i.nome + '</button>';
+          }).join('') +
+        '</div>' +
         '<div id="painel-afiliado"></div>' +
       '</div>';
 

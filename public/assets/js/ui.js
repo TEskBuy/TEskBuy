@@ -30,6 +30,11 @@
     estrela: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 3.6 2.5 5.1 5.6.8-4 3.9 1 5.6-5.1-2.7-5 2.7 1-5.6-4.1-3.9 5.6-.8z"/></svg>',
     escudo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5.5c0 4.3-3 8-7 9.5-4-1.5-7-5.2-7-9.5V6z"/><path d="m9 12 2 2 4-4"/></svg>',
     camiao: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7h11v9H2zM13 10h4l4 3.2V16h-8z"/><circle cx="6.5" cy="18" r="1.7"/><circle cx="17" cy="18" r="1.7"/></svg>',
+    definicoes: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-2.87 1.2V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-2.87-1.2l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 3 15a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.34-2.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 10 4V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 17 4.4l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 21 11a2 2 0 1 1 0 4z"/></svg>',
+    cadeado: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="10.5" width="15" height="10" rx="2.4"/><path d="M8 10.5V7.6a4 4 0 0 1 8 0v2.9"/></svg>',
+    ajuda: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.3 2.4c-.6.2-.9.8-.9 1.4v.4"/><path d="M12 17h.01"/></svg>',
+    sair: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4"/><path d="M10 16l4-4-4-4M14 12H4"/></svg>',
+    camara: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5h3l1.4-2h7.2L17 8.5h3v10H4z"/><circle cx="12" cy="13" r="3.4"/></svg>',
     cartao: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><path d="M2.5 10h19"/></svg>',
   };
 
@@ -116,6 +121,88 @@
     }, 3600);
   }
 
+  /* ── topo de perfil, partilhado pelas quatro áreas ────────
+     Capa, foto redonda, nome, contadores e a fila de atalhos.
+     É o mesmo bloco na conta, no comerciante, no afiliado e na gestão:
+     muda só o que se lhe dá a mostrar. */
+  function cabecalhoPerfil(o) {
+    var nome = o.nome || 'Conta TEskBuy';
+    var inicial = String(nome).trim().charAt(0).toUpperCase();
+
+    return '' +
+      '<section class="pf-topo">' +
+        '<div class="pf-capa"></div>' +
+        '<div class="env">' +
+          '<div class="pf-linha">' +
+            '<div class="pf-foto">' +
+              (o.foto
+                ? '<img src="' + escapar(o.foto) + '" alt="' + escapar(nome) + '">'
+                : '<span class="pf-letra">' + escapar(inicial) + '</span>') +
+              (o.podeTrocarFoto
+                ? '<button class="pf-camara" id="pf-btn-foto" aria-label="Mudar foto">' + ico.camara + '</button>' +
+                  '<input type="file" id="pf-ficheiro-foto" accept="image/png,image/jpeg,image/webp" hidden>'
+                : '') +
+            '</div>' +
+            '<div class="pf-identidade">' +
+              '<h1>' + escapar(nome) + '</h1>' +
+              '<p class="pf-papel">' + escapar(o.papel || '') +
+                (o.desde ? ' · desde ' + data(o.desde) : '') + '</p>' +
+            '</div>' +
+            (o.accao || '') +
+          '</div>' +
+
+          (o.estatisticas && o.estatisticas.length
+            ? '<div class="pf-numeros">' +
+                o.estatisticas.map(function (e) {
+                  return '<div class="pf-numero">' +
+                    (e.icone ? '<span class="pf-numero-ico">' + e.icone + '</span>' : '') +
+                    '<b>' + escapar(String(e.valor)) + '</b>' +
+                    '<span>' + escapar(e.rotulo) + '</span>' +
+                  '</div>';
+                }).join('') +
+              '</div>'
+            : '') +
+
+          (o.atalhos && o.atalhos.length
+            ? '<div class="pf-atalhos">' +
+                o.atalhos.map(function (a) {
+                  return '<a href="' + a.href + '"' + (a.activo ? ' class="activo"' : '') + '>' +
+                    '<span class="pf-atalho-ico">' + a.icone + '</span>' +
+                    '<span class="pf-atalho-txt">' + escapar(a.texto) + '</span>' +
+                  '</a>';
+                }).join('') +
+              '</div>'
+            : '') +
+
+          '<p class="pf-contacto">' +
+            (o.email ? ico.correio + '<span>' + escapar(o.email) + '</span>' : '') +
+          '</p>' +
+        '</div>' +
+      '</section>';
+  }
+
+  /** Liga o botão da câmara do topo de perfil. `aoGravar(url)` devolve uma promessa. */
+  function ligarFotoPerfil(aoGravar) {
+    var botao = document.getElementById('pf-btn-foto');
+    var campo = document.getElementById('pf-ficheiro-foto');
+    if (!botao || !campo) return;
+
+    botao.addEventListener('click', function () { campo.click(); });
+    campo.addEventListener('change', function () {
+      var ficheiro = campo.files && campo.files[0];
+      if (!ficheiro) return;
+      if (ficheiro.size > 5 * 1024 * 1024) {
+        notificar('A imagem não pode passar dos 5 MB.', 'erro');
+        return;
+      }
+      botao.disabled = true;
+      carregarFicheiro(ficheiro, 'avatar')
+        .then(function (f) { return aoGravar(f.url); })
+        .catch(function (e) { notificar(e.message || 'Não foi possível enviar a foto.', 'erro'); })
+        .then(function () { botao.disabled = false; });
+    });
+  }
+
   /* ── quem é esta conta ────────────────────────────────────
      O menu não pode depender só do papel: uma pessoa pode ser cliente,
      afiliada, vendedora, ou as duas coisas. Isto guarda a última resposta
@@ -171,9 +258,8 @@
     }
 
     if (!u) {
-      // o "Entrar" já está no cabeçalho, ao lado; aqui só duplicava
-      return item('/carrinho', ico.carrinho, 'O meu carrinho') +
-             item('/parceiro', ico.camiao, 'Vender na TEskBuy') +
+      // o "Entrar" e o carrinho já estão no cabeçalho, ao lado
+      return item('/parceiro', ico.camiao, 'Vender na TEskBuy') +
              item('/parceiro?tipo=afiliado', ico.estrela, 'Ser Afiliado');
     }
 
@@ -181,22 +267,18 @@
     var afiliado = ehAfiliado(perfil);
     // quem é da equipa gere o marketplace, não se candidata a ele
     var equipa = u.papel === 'admin' || u.papel === 'gestor';
-    var html = item('/conta', ico.conta, 'A minha conta');
-    if (equipa) html += item('/admin', ico.escudo, 'Painel de gestão');
+    var html = '';
 
+    if (equipa) html += item('/admin', ico.escudo, 'Painel de gestão');
     if (vendedor) html += item('/comerciante', ico.camiao, 'Área de Vendas');
     if (afiliado) html += item('/afiliado', ico.estrela, 'Área de Afiliado');
+
     // quem ainda não é nem uma coisa nem outra vê os dois convites
     if (!afiliado && !vendedor && !equipa) {
       html += item('/parceiro?tipo=afiliado', ico.estrela, 'Tornar-se Afiliado');
       html += item('/parceiro', ico.camiao, 'Vender na TEskBuy');
     }
 
-    html += item('/favoritos', ico.coracao, 'Favoritos');
-    html += item('/carrinho', ico.carrinho, 'O meu carrinho');
-    html += item('/encomendas', ico.camiao, 'As minhas encomendas');
-    html += item('/conta?sep=mensagens', ico.correio, 'Mensagens');
-    html += item('/conta?sep=definicoes', ico.escudo, 'Definições');
     return html;
   }
 
@@ -1147,5 +1229,6 @@
     actualizarCrachas: actualizarCrachas, esqueletos: esqueletos,
     exigirSessao: exigirSessao, sincronizarAposLogin: sincronizarAposLogin, refrescarSessao: refrescarSessao,
     carregarFicheiro: carregarFicheiro, referencia: referencia,
+    cabecalhoPerfil: cabecalhoPerfil, ligarFotoPerfil: ligarFotoPerfil,
   };
 })(window);

@@ -141,6 +141,22 @@
   function valor(fundo, id) { return fundo.querySelector('#' + id).value.trim(); }
 
   /* ── moldura ─────────────────────────────────────────────── */
+  /* Um ícone por ferramenta, para a fila de atalhos do topo. */
+  var ICONES_GESTAO = {
+    painel: ui.ico.escudo,
+    encomendas: ui.ico.camiao,
+    produtos: ui.ico.carrinho,
+    stock: ui.ico.mais,
+    cupoes: ui.ico.cartao,
+    candidaturas: ui.ico.conta,
+    parcerias: ui.ico.estrela,
+    denuncias: ui.ico.escudo,
+    tickets: ui.ico.correio,
+    utilizadores: ui.ico.conta,
+    conteudo: ui.ico.definicoes,
+    auditoria: ui.ico.local,
+  };
+
   function moldura(pendentes, stockBaixo) {
     var itens = [
       { id: 'painel', nome: 'Resumo' },
@@ -158,20 +174,44 @@
     if (eu.papel === 'admin') itens.push({ id: 'auditoria', nome: 'Auditoria' });
 
     conteudo.innerHTML =
-      '<div class="admin-grelha">' +
-        '<aside>' +
-          '<p class="eyebrow" style="margin-bottom:14px">Gestão</p>' +
-          '<nav class="admin-menu">' +
-            itens.map(function (i) {
-              return '<button data-vista="' + i.id + '" class="' + (vista === i.id ? 'activo' : '') + '">' +
-                i.nome + (i.n ? '<span class="n">' + i.n + '</span>' : '') + '</button>';
-            }).join('') +
-          '</nav>' +
-          '<p class="pequeno silenciado" style="margin-top:18px;padding:0 14px">' +
-            'Sessão de ' + ui.escapar(eu.nome || eu.email) + '</p>' +
-        '</aside>' +
+      ui.cabecalhoPerfil({
+        nome: eu.nome || eu.email,
+        papel: eu.papel === 'admin' ? 'Administrador' : 'Gestor',
+        email: eu.email,
+        foto: eu.avatar_url,
+        estatisticas: [
+          { valor: pendentes || 0, rotulo: 'Encomendas pendentes', icone: ui.ico.camiao },
+          { valor: stockBaixo || 0, rotulo: 'Stock baixo', icone: ui.ico.escudo },
+          { valor: itens.length, rotulo: 'Ferramentas', icone: ui.ico.definicoes },
+        ],
+        // as ferramentas todas da gestão, à mão
+        atalhos: itens.map(function (i) {
+          return {
+            href: '#' + i.id,
+            icone: ICONES_GESTAO[i.id] || ui.ico.escudo,
+            texto: i.nome,
+            activo: vista === i.id,
+          };
+        }),
+      }) +
+      '<div class="env">' +
+        '<div class="pf-separadores">' +
+          itens.map(function (i) {
+            return '<button data-vista="' + i.id + '" class="' + (vista === i.id ? 'activo' : '') + '">' +
+              i.nome + (i.n ? ' <span class="n">' + i.n + '</span>' : '') + '</button>';
+          }).join('') +
+        '</div>' +
         '<div id="painel-admin"></div>' +
       '</div>';
+
+    // os atalhos do topo mudam o endereço; isto faz a página segui-lo
+    window.onhashchange = function () {
+      var nova = location.hash.replace('#', '');
+      if (!nova || nova === vista) return;
+      vista = nova;
+      moldura(pendentes, stockBaixo);
+      abrir();
+    };
 
     conteudo.querySelectorAll('[data-vista]').forEach(function (b) {
       b.addEventListener('click', function () {

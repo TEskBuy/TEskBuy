@@ -13,7 +13,8 @@
     'Moxico', 'Namibe', 'Uíge', 'Zaire',
   ];
 
-  var separador = location.hash.replace('#', '') || 'dados';
+  var separador = new URLSearchParams(location.search).get('sep') ||
+                  location.hash.replace('#', '') || 'moradas';
   var perfil = null;
   var moradas = [];
 
@@ -31,47 +32,60 @@
     };
   }
 
+  /** Quantos itens tem cada coisa, para os contadores do topo. */
+  var contadores = { encomendas: 0, favoritos: 0, denuncias: 0 };
+
   function moldura(interior) {
     var u = api.utilizador.obter() || {};
+    var eh = contaEh();
+
+    var papel =
+      u.papel === 'admin' ? 'Administrador'
+        : u.papel === 'gestor' ? 'Gestor'
+          : eh.empresa && eh.afiliado ? 'Vendedor e afiliado'
+            : eh.empresa ? 'Vendedor'
+              : eh.afiliado ? 'Afiliado'
+                : 'Cliente';
+
+    var atalhos = [
+      { href: '/encomendas', icone: ui.ico.camiao, texto: 'Encomendas' },
+      { href: '/favoritos', icone: ui.ico.coracao, texto: 'Favoritos' },
+    ];
+    if (eh.empresa) atalhos.push({ href: '/comerciante', icone: ui.ico.cartao, texto: 'Vendas' });
+    if (eh.afiliado) atalhos.push({ href: '/afiliado', icone: ui.ico.estrela, texto: 'Afiliado' });
+    if (u.papel === 'admin' || u.papel === 'gestor') {
+      atalhos.push({ href: '/admin', icone: ui.ico.escudo, texto: 'Gestão' });
+    }
+    atalhos.push({ href: '/conta?sep=definicoes', icone: ui.ico.definicoes, texto: 'Definições' });
+
     var separadores = [
-      { id: 'dados', nome: 'Os meus dados' },
       { id: 'moradas', nome: 'Moradas' },
       { id: 'mensagens', nome: 'Mensagens' },
       { id: 'denuncias', nome: 'Denúncias' },
       { id: 'definicoes', nome: 'Definições' },
-      { id: 'seguranca', nome: 'Segurança' },
     ];
 
     conteudo.innerHTML =
-      '<div class="conta-grelha">' +
-        '<aside>' +
-          '<div class="cartao" style="margin-bottom:16px">' +
-            '<p class="mono pequeno silenciado">Conta</p>' +
-            '<p style="margin-top:6px;font-size:16px">' + ui.escapar(perfil.full_name || 'Cliente TEskBuy') + '</p>' +
-            '<p class="pequeno silenciado" style="margin-top:2px">' + ui.escapar(perfil.email || '') + '</p>' +
-            (perfil.role !== 'cliente'
-              ? '<p class="pilula" style="margin-top:10px;display:inline-block">' +
-                (perfil.role === 'admin' ? 'Administrador' : 'Gestor') + '</p>'
-              : '') +
-          '</div>' +
-          '<nav class="menu-conta">' +
-            separadores.map(function (s) {
-              return '<button data-sep="' + s.id + '" class="' + (separador === s.id ? 'activo' : '') + '">' + s.nome + '</button>';
-            }).join('') +
-            '<a href="/encomendas">As minhas encomendas</a>' +
-            '<a href="/favoritos">Favoritos</a>' +
-            // "Vender na TEskBuy" saiu do menu principal e vive aqui.
-            // A equipa não se candidata ao marketplace que gere.
-            (contaEh().empresa
-              ? '<a href="/comerciante">Área de Vendas</a>'
-              : (u.papel === 'admin' || u.papel === 'gestor'
-                  ? ''
-                  : '<a href="/parceiro">Vender na TEskBuy</a>')) +
-            (contaEh().afiliado ? '<a href="/afiliado">Área de Afiliado</a>' : '') +
-            (u.papel === 'admin' || u.papel === 'gestor' ? '<a href="/admin">Painel de gestão</a>' : '') +
-            '<button id="terminar" style="color:#ff8a86">Terminar sessão</button>' +
-          '</nav>' +
-        '</aside>' +
+      ui.cabecalhoPerfil({
+        nome: perfil.full_name || 'Cliente TEskBuy',
+        papel: papel,
+        email: perfil.email,
+        foto: perfil.avatar_url,
+        podeTrocarFoto: true,
+        estatisticas: [
+          { valor: contadores.encomendas, rotulo: 'Encomendas', icone: ui.ico.camiao },
+          { valor: contadores.favoritos, rotulo: 'Favoritos', icone: ui.ico.coracao },
+          { valor: contadores.denuncias, rotulo: 'Denúncias', icone: ui.ico.escudo },
+        ],
+        atalhos: atalhos,
+      }) +
+      '<div class="env">' +
+        '<div class="pf-separadores">' +
+          separadores.map(function (sep) {
+            return '<button data-sep="' + sep.id + '" class="' +
+              (separador === sep.id ? 'activo' : '') + '">' + sep.nome + '</button>';
+          }).join('') +
+        '</div>' +
         '<div id="painel">' + interior + '</div>' +
       '</div>';
 
@@ -83,40 +97,24 @@
       });
     });
 
-    document.getElementById('terminar').addEventListener('click', function () {
-      api.sair().then(function () {
-        estado.carrinho.limpar();
-        estado.favoritos.definir([]);
-        location.href = '/';
+    ui.ligarFotoPerfil(function (url) {
+      return api.patch('/utilizadores/eu', { avatar_url: url }).then(function (r) {
+        perfil = r.dados;
+        var actual = api.utilizador.obter() || {};
+        actual.avatar_url = url;
+        api.utilizador.guardar(actual);
+        ui.notificar('Foto actualizada.', 'ok');
+        ui.cabecalho();
+        desenhar();
       });
     });
   }
 
   /* ── dados pessoais ─────────────────────────────────────── */
   function painelDados() {
-    var u = api.utilizador.obter() || {};
-    var foto = perfil.avatar_url || u.avatar_url;
-    var inicial = String(perfil.full_name || perfil.email || '?').trim().charAt(0).toUpperCase();
-
-    return '<h1 style="padding-top:4px">Os meus dados</h1>' +
-      '<p class="silenciado pequeno" style="margin:6px 0 20px">Usamos estes dados para o contactar sobre as encomendas.</p>' +
-      '<div class="cartao" style="margin-bottom:16px">' +
-        '<div class="perfil-foto">' +
-          (foto
-            ? '<img class="avatar" id="foto-actual" src="' + ui.escapar(foto) + '" alt="A minha foto">'
-            : '<span class="avatar avatar-letra" id="foto-actual">' + ui.escapar(inicial) + '</span>') +
-          '<div>' +
-            '<strong>Foto de perfil</strong>' +
-            '<p class="pequeno silenciado">Aparece no topo do site. PNG, JPG ou WEBP.</p>' +
-            '<div class="linha-flex" style="margin-top:10px;gap:8px">' +
-              '<button class="btn btn-secundario" id="btn-foto" type="button">' +
-                (foto ? 'Mudar foto' : 'Carregar foto') + '</button>' +
-              (foto ? '<button class="pilula" id="btn-foto-remover" type="button">Remover</button>' : '') +
-            '</div>' +
-            '<input type="file" id="ficheiro-foto" accept="image/png,image/jpeg,image/webp" hidden>' +
-          '</div>' +
-        '</div>' +
-      '</div>' +
+    return '<h2 style="margin-bottom:6px">Os meus dados</h2>' +
+      '<p class="silenciado pequeno" style="margin-bottom:18px">' +
+        'Usamos estes dados para o contactar sobre as encomendas. A foto muda-se lá em cima.</p>' +
       avisoDadosVerdadeiros() +
       '<form class="cartao" id="form-perfil">' +
         '<div class="campo"><label for="nome">Nome completo</label>' +
@@ -140,57 +138,7 @@
       'Informação falsa ou incorrecta pode levar a restrições ou ao encerramento da conta.</div></div>';
   }
 
-  /** Carregar e trocar a foto de perfil. */
-  function ligarFoto() {
-    var botao = document.getElementById('btn-foto');
-    var campo = document.getElementById('ficheiro-foto');
-    var remover = document.getElementById('btn-foto-remover');
-    if (!botao || !campo) return;
-
-    function gravar(url, mensagem) {
-      return api.patch('/utilizadores/eu', { avatar_url: url })
-        .then(function (r) {
-          perfil = r.dados;
-          var u = api.utilizador.obter() || {};
-          u.avatar_url = url;
-          api.utilizador.guardar(u);
-          ui.notificar(mensagem, 'ok');
-          ui.cabecalho();          // o cabeçalho passa a mostrar a foto nova
-          desenhar();
-        });
-    }
-
-    botao.addEventListener('click', function () { campo.click(); });
-
-    campo.addEventListener('change', function () {
-      var ficheiro = campo.files && campo.files[0];
-      if (!ficheiro) return;
-      if (ficheiro.size > 5 * 1024 * 1024) {
-        ui.notificar('A imagem não pode passar dos 5 MB.', 'erro');
-        return;
-      }
-      botao.disabled = true;
-      botao.textContent = 'A enviar…';
-      ui.carregarFicheiro(ficheiro, 'avatar')
-        .then(function (f) { return gravar(f.url, 'Foto actualizada.'); })
-        .catch(function (e) {
-          botao.disabled = false;
-          botao.textContent = 'Carregar foto';
-          ui.notificar(e.message || 'Não foi possível enviar a foto.', 'erro');
-        });
-    });
-
-    if (remover) {
-      remover.addEventListener('click', function () {
-        gravar(null, 'Foto removida.').catch(function (e) {
-          ui.notificar(e.message || 'Não foi possível remover.', 'erro');
-        });
-      });
-    }
-  }
-
   function ligarDados() {
-    ligarFoto();
     var form = document.getElementById('form-perfil');
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
@@ -476,16 +424,85 @@
     iban: 'Conta bancária (IBAN)',
   };
 
-  function verDefinicoes() {
-    moldura('<div id="painel-definicoes">' + ui.esqueletos(2, 'esqueleto') + '</div>');
+  /* ── Definições: perfil, segurança e avisos ────────────────
+     A mesma organização das outras aplicações: separadores no topo e,
+     em baixo, o apoio, os documentos legais e a saída. */
+  var subDefinicao = 'perfil';
 
+  function verDefinicoes() {
+    moldura(
+      '<div class="pf-separadores" id="sub-separadores" style="margin-top:0">' +
+        [
+          { id: 'perfil', nome: 'Perfil', icone: ui.ico.conta },
+          { id: 'seguranca', nome: 'Segurança', icone: ui.ico.cadeado },
+          { id: 'avisos', nome: 'Notificações', icone: ui.ico.sino },
+        ].map(function (t) {
+          return '<button data-sub="' + t.id + '" class="' +
+            (subDefinicao === t.id ? 'activo' : '') + '">' + t.icone + ' ' + t.nome + '</button>';
+        }).join('') +
+      '</div>' +
+      '<div id="sub-painel">' + ui.esqueletos(2, 'esqueleto') + '</div>' +
+      blocoLegal()
+    );
+
+    document.querySelectorAll('[data-sub]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        subDefinicao = b.getAttribute('data-sub');
+        verDefinicoes();
+      });
+    });
+
+    document.getElementById('btn-sair').addEventListener('click', terminarSessao);
+
+    if (subDefinicao === 'perfil') {
+      document.getElementById('sub-painel').innerHTML = painelDados();
+      ligarDados();
+      return;
+    }
+    if (subDefinicao === 'seguranca') {
+      document.getElementById('sub-painel').innerHTML = painelSeguranca();
+      ligarSeguranca();
+      return;
+    }
+    painelAvisos();
+  }
+
+  /** Apoio, documentos legais e terminar sessão — no fim das definições. */
+  function blocoLegal() {
+    var paginas = [
+      { href: '/informacoes?p=contacte-nos', nome: 'Centro de ajuda' },
+      { href: '/informacoes?p=sobre-nos', nome: 'Sobre a TEskBuy' },
+      { href: '/informacoes?p=entregas', nome: 'Entregas e devoluções' },
+      { href: '/informacoes?p=termos', nome: 'Termos de serviço' },
+      { href: '/informacoes?p=privacidade', nome: 'Política de privacidade' },
+    ];
+    return '<div style="margin-top:22px">' +
+      '<div class="pf-legal">' +
+        '<h3>' + ui.ico.ajuda + 'Apoio e legal</h3>' +
+        paginas.map(function (p2) {
+          return '<a href="' + p2.href + '">' + ui.escapar(p2.nome) + ui.ico.chevron + '</a>';
+        }).join('') +
+      '</div>' +
+      '<button class="btn-sair" id="btn-sair">' + ui.ico.sair + 'Terminar sessão</button>' +
+    '</div>';
+  }
+
+  function terminarSessao() {
+    api.sair().then(function () {
+      estado.carrinho.limpar();
+      estado.favoritos.definir([]);
+      location.href = '/';
+    });
+  }
+
+  function painelAvisos() {
     Promise.all([api.get('/definicoes/perfil'), api.get('/definicoes/pagamentos')])
       .then(function (r) {
         var d = r[0].dados;
         var metodos = r[1].dados || [];
         var p = d.preferencias;
 
-        document.getElementById('painel-definicoes').innerHTML =
+        document.getElementById('sub-painel').innerHTML =
           '<h2 style="margin-bottom:6px">Definições</h2>' +
           '<p class="silenciado pequeno" style="margin-bottom:18px">' +
             'Idioma, notificações e formas de pagamento.</p>' +
@@ -555,7 +572,7 @@
         ligarDefinicoes(d);
       })
       .catch(function (e) {
-        document.getElementById('painel-definicoes').innerHTML =
+        document.getElementById('sub-painel').innerHTML =
           '<div class="aviso aviso-erro">' + ui.escapar(e.message) + '</div>';
       });
   }
@@ -615,17 +632,14 @@
   function desenhar() {
     if (separador === 'mensagens') return verMensagens();
     if (separador === 'denuncias') return verDenuncias();
-    if (separador === 'definicoes') return verDefinicoes();
-    if (separador === 'moradas') {
-      moldura(painelMoradas());
-      ligarMoradas();
-    } else if (separador === 'seguranca') {
-      moldura(painelSeguranca());
-      ligarSeguranca();
-    } else {
-      moldura(painelDados());
-      ligarDados();
+    // "dados" e "seguranca" passaram a viver dentro das Definições
+    if (separador === 'dados' || separador === 'seguranca') {
+      subDefinicao = separador === 'seguranca' ? 'seguranca' : 'perfil';
+      separador = 'definicoes';
     }
+    if (separador === 'definicoes') return verDefinicoes();
+    moldura(painelMoradas());
+    ligarMoradas();
   }
 
   function carregar() {
@@ -633,10 +647,15 @@
     return Promise.all([
       api.get('/utilizadores/eu'),
       api.get('/utilizadores/eu/moradas').catch(function () { return { dados: [] }; }),
+      api.get('/encomendas').catch(function () { return { dados: [] }; }),
+      api.get('/suporte/denuncias').catch(function () { return { dados: [] }; }),
     ])
       .then(function (r) {
         perfil = r[0].dados;
         moradas = r[1].dados || [];
+        contadores.encomendas = (r[2].dados || []).length;
+        contadores.denuncias = (r[3].dados || []).length;
+        contadores.favoritos = estado.favoritos.ids().length;
         desenhar();
       })
       .catch(function (e) {
