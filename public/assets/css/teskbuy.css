@@ -770,6 +770,9 @@ body.sem-rolagem .convite{ display:none; }
   /* o carrinho ficou em todas as páginas: numa loja tem de estar sempre
      à mão. Só a lupa é que é exclusiva da página inicial. */
   body.fora-do-inicio #btn-procura-movel{ display:none; }
+  /* Aqui a barra de procura fica escondida, e era ela que empurrava os
+     ícones para a direita. Sem isto ficavam colados ao logótipo. */
+  .accoes{ margin-left:auto; }
 }
 
 /* ============================================================
@@ -966,10 +969,14 @@ body.sem-rolagem .convite{ display:none; }
 .pf-separadores::-webkit-scrollbar{ display:none; }
 .pf-separadores button{
   flex:1 0 auto; white-space:nowrap; cursor:pointer;
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
   padding:10px 18px; border-radius:999px; border:none; background:transparent;
   color: var(--ink-dim); font-family:inherit; font-size:13.5px; font-weight:500;
   transition: background .18s, color .18s;
 }
+/* Um SVG solto dentro do botão não tem tamanho próprio: sem isto ocupava
+   a largura toda. */
+.pf-separadores button svg{ width:16px; height:16px; flex-shrink:0; }
 .pf-separadores button:hover{ color: var(--ink); }
 .pf-separadores button.activo{ background: var(--orange); color: var(--teal-deep); font-weight:600; }
 
@@ -1003,4 +1010,10 @@ body.sem-rolagem .convite{ display:none; }
   .pf-numeros{ grid-template-columns: repeat(3, 1fr); }
   .pf-atalhos{ grid-template-columns: repeat(4, 1fr); }
   .pf-atalho-ico{ width:42px; height:42px; }
+}
+
+/* Tem de vir no fim: há uma regra `.accoes{ margin-left:4px }` mais abaixo
+   no ficheiro que, por vir depois, ganhava a esta. */
+@media (max-width: 1120px){
+  .accoes{ margin-left:auto; }
 }

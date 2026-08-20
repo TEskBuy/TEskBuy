@@ -58,12 +58,13 @@
     }
     atalhos.push({ href: '/conta?sep=definicoes', icone: ui.ico.definicoes, texto: 'Definições' });
 
-    var separadores = [
-      { id: 'moradas', nome: 'Moradas' },
-      { id: 'mensagens', nome: 'Mensagens' },
-      { id: 'denuncias', nome: 'Denúncias' },
-      { id: 'definicoes', nome: 'Definições' },
-    ];
+    // As mensagens têm o seu ícone no cabeçalho. Este lugar passa a levar
+    // cada um à sua área — e um cliente comum não tem nenhuma, fica sem nada.
+    var separadores = [{ id: 'moradas', nome: 'Moradas' }];
+    if (eh.empresa) separadores.push({ id: 'vendas', nome: 'Área do Vendedor', href: '/comerciante' });
+    if (eh.afiliado) separadores.push({ id: 'parceiro', nome: 'Área de Afiliado', href: '/afiliado' });
+    separadores.push({ id: 'denuncias', nome: 'Denúncias' });
+    separadores.push({ id: 'definicoes', nome: 'Definições' });
 
     conteudo.innerHTML =
       ui.cabecalhoPerfil({
@@ -82,6 +83,9 @@
       '<div class="env">' +
         '<div class="pf-separadores">' +
           separadores.map(function (sep) {
+            if (sep.href) {
+              return '<button data-ir="' + sep.href + '">' + sep.nome + '</button>';
+            }
             return '<button data-sep="' + sep.id + '" class="' +
               (separador === sep.id ? 'activo' : '') + '">' + sep.nome + '</button>';
           }).join('') +
@@ -95,6 +99,10 @@
         location.hash = separador;
         desenhar();
       });
+    });
+
+    conteudo.querySelectorAll('[data-ir]').forEach(function (b) {
+      b.addEventListener('click', function () { location.href = b.getAttribute('data-ir'); });
     });
 
     ui.ligarFotoPerfil(function (url) {
@@ -631,6 +639,8 @@
 
   function desenhar() {
     if (separador === 'mensagens') return verMensagens();
+    if (separador === 'vendas') { location.href = '/comerciante'; return; }
+    if (separador === 'parceiro') { location.href = '/afiliado'; return; }
     if (separador === 'denuncias') return verDenuncias();
     // "dados" e "seguranca" passaram a viver dentro das Definições
     if (separador === 'dados' || separador === 'seguranca') {
