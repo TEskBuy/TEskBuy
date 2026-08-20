@@ -149,4 +149,15 @@ async function marcarLidas(utilizadorId, conversaId) {
   return { lidas: true };
 }
 
-module.exports = { minhas, daEmpresa, iniciar, enviar, marcarLidas };
+/** Quantas mensagens tem por ler — serve o ícone do cabeçalho. */
+async function porLer(utilizadorId) {
+  const { count, error } = await db()
+    .from('conversation_messages')
+    .select('id', { count: 'exact', head: true })
+    .neq('sender_id', utilizadorId)
+    .is('read_at', null);
+  if (error) throw error;
+  return { total: count || 0 };
+}
+
+module.exports = { minhas, daEmpresa, iniciar, enviar, marcarLidas, porLer };

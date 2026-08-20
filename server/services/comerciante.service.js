@@ -23,7 +23,7 @@ const CAMPOS_PRODUTO = `
 async function empresaDe(utilizadorId) {
   const { data, error } = await db()
     .from('companies')
-    .select('id, name, slug, legal_name, tax_id, email, phone, province, municipality, address, logo_url, description, status, commission_rate, rating, rating_count, created_at')
+    .select('id, name, slug, legal_name, tax_id, email, phone, province, municipality, address, logo_url, cover_url, description, status, commission_rate, rating, rating_count, created_at')
     .eq('owner_id', utilizadorId)
     .eq('status', 'aprovada')
     .maybeSingle();
@@ -271,7 +271,7 @@ async function responderAvaliacao(empresa, avaliacaoId, resposta) {
 async function actualizarEmpresa(empresa, corpo) {
   const permitidos = [
     'name', 'legal_name', 'tax_id', 'email', 'phone',
-    'province', 'municipality', 'address', 'logo_url', 'description',
+    'province', 'municipality', 'address', 'logo_url', 'cover_url', 'description',
   ];
   const alteracoes = { updated_at: new Date().toISOString() };
   permitidos.forEach((k) => {

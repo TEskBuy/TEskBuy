@@ -46,6 +46,10 @@ const pedirEliminacao = capturar(async (req, res) => {
 
 /* ── conversas ─────────────────────────────────────────────── */
 
+const mensagensPorLer = capturar(async (req, res) =>
+  ok(res, await conversas.porLer(req.utilizador.id))
+);
+
 const minhasConversas = capturar(async (req, res) =>
   ok(res, await conversas.minhas(req.utilizador.id))
 );
@@ -72,5 +76,5 @@ const conversasDaEmpresa = capturar(async (req, res) =>
 
 module.exports = {
   perfil, guardarPreferencias, listarMetodos, criarMetodo, apagarMetodo, pedirEliminacao,
-  minhasConversas, iniciarConversa, enviarMensagem, marcarLidas, conversasDaEmpresa,
+  minhasConversas, mensagensPorLer, iniciarConversa, enviarMensagem, marcarLidas, conversasDaEmpresa,
 };

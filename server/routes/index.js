@@ -50,6 +50,7 @@ router.use('/encomendas', require('./encomendas.routes'));
 router.use('/utilizadores', require('./utilizadores.routes'));
 router.use('/parceiros', require('./parceiros.routes'));
 router.use('/comerciante', require('./comerciante.routes'));
+router.use('/empresas', require('./empresas.routes'));
 router.use('/ficheiros', require('./ficheiros.routes'));
 router.use('/afiliados', require('./afiliados.routes'));
 router.use('/suporte', require('./suporte.routes'));

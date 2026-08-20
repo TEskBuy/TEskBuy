@@ -109,6 +109,7 @@ const dadosEmpresa = z.object({
   municipality: campo(60),
   address: campo(240),
   logo_url: z.string().trim().url('Endereço de imagem inválido.').optional().or(z.literal('')),
+  cover_url: z.string().trim().url('Endereço de imagem inválido.').optional().or(z.literal('')),
   description: z.string().trim().max(1000).optional(),
 }).partial();
 
