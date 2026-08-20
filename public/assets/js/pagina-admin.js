@@ -1,4 +1,4 @@
-/* TeskBuy — painel de gestão (admin e gestor) */
+/* TEskBuy — painel de gestão (admin e gestor) */
 (function () {
   'use strict';
   var api = window.TBApi, ui = window.TBUI;
@@ -11,7 +11,7 @@
      "criar conta". O cabeçalho e o rodapé ficam vazios de propósito,
      porque o ui.iniciar() só corre depois de haver sessão. */
   function ecraEntradaEquipa() {
-    document.title = 'Área de gestão — TeskBuy';
+    document.title = 'Área de gestão — TEskBuy';
 
     conteudo.innerHTML =
       '<div style="display:flex;align-items:center;justify-content:center;min-height:78vh;padding:40px 0">' +
@@ -24,7 +24,7 @@
           '</div>' +
           '<div class="cartao" style="padding:30px">' +
             '<h1 style="font-size:22px;margin-bottom:6px">Entrar</h1>' +
-            '<p class="pequeno silenciado" style="margin-bottom:22px">Acesso reservado à equipa TeskBuy.</p>' +
+            '<p class="pequeno silenciado" style="margin-bottom:22px">Acesso reservado à equipa TEskBuy.</p>' +
             '<div id="aviso-equipa"></div>' +
             '<form id="form-equipa">' +
               '<div class="campo"><label for="eq-email">E-mail</label>' +
@@ -481,7 +481,7 @@
       '<div class="campo"><label for="p-imagens">Imagens (um endereço por linha)</label>' +
         '<textarea id="p-imagens" placeholder="https://…">' +
         ui.escapar((p.imagens || []).map(function (i) { return i.url; }).join('\n')) + '</textarea>' +
-        '<span class="ajuda">Sem imagem, mostramos um cartão com a identidade TeskBuy.</span></div>' +
+        '<span class="ajuda">Sem imagem, mostramos um cartão com a identidade TEskBuy.</span></div>' +
       '<label class="opcao" style="margin-bottom:10px"><input type="checkbox" id="p-activo"' +
         (p.is_active === false ? '' : ' checked') + '><span><strong>Visível na loja</strong>' +
         '<span>Desligue para esconder sem apagar.</span></span></label>' +
@@ -1043,7 +1043,7 @@
         document.getElementById('painel-admin').innerHTML =
           '<h1 style="margin-bottom:4px">Candidaturas</h1>' +
           '<p class="silenciado pequeno" style="margin-bottom:16px">' +
-            'Pedidos para vender na TeskBuy ou para ser afiliado.</p>' +
+            'Pedidos para vender na TEskBuy ou para ser afiliado.</p>' +
           '<div class="pilulas" style="margin-bottom:18px">' + filtros + '</div>' +
           corpo;
 
@@ -1439,7 +1439,7 @@
         t.mensagens.map(function (m) {
           return '<div style="padding:8px 0;border-bottom:1px solid rgba(238,247,248,.06)">' +
             '<p class="pequeno silenciado">' + ui.escapar(m.autor) +
-              (m.da_equipa ? ' · TeskBuy' : '') + ' · ' + ui.data(m.criada_em, true) + '</p>' +
+              (m.da_equipa ? ' · TEskBuy' : '') + ' · ' + ui.data(m.criada_em, true) + '</p>' +
             '<p class="pequeno" style="margin-top:4px">' + ui.escapar(m.texto) + '</p>' +
           '</div>';
         }).join('') +
@@ -1555,7 +1555,7 @@
       if (eu.papel !== 'admin' && eu.papel !== 'gestor') {
         conteudo.innerHTML =
           '<div class="cartao-vazio" style="margin:40px 0 70px">' +
-            '<h3>Esta área é da equipa TeskBuy</h3>' +
+            '<h3>Esta área é da equipa TEskBuy</h3>' +
             '<p>A sua conta não tem acesso ao painel de gestão. Se devia ter, fale com um administrador.</p>' +
             '<div class="linha-flex" style="justify-content:center">' +
               '<a class="btn btn-principal" href="/">Voltar à loja</a>' +

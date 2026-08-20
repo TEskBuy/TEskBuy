@@ -49,5 +49,5 @@ const bd = createClient(env.supabase.url, env.supabase.serviceRoleKey, {
     process.exit(1);
   }
 
-  console.log(`\n  ${data.full_name || data.email} passou a administrador da TeskBuy.\n`);
+  console.log(`\n  ${data.full_name || data.email} passou a administrador da TEskBuy.\n`);
 })();

@@ -1,4 +1,4 @@
-/* TeskBuy — catálogo com filtros */
+/* TEskBuy — catálogo com filtros */
 (function () {
   'use strict';
   var api = window.TBApi, ui = window.TBUI;

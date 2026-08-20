@@ -1,5 +1,5 @@
 /* ============================================================
-   TeskBuy — componentes partilhados da interface
+   TEskBuy — componentes partilhados da interface
    ============================================================ */
 (function (global) {
   'use strict';
@@ -76,7 +76,7 @@
     var url = produto && (produto.imagem || (produto.imagens && produto.imagens[0] && produto.imagens[0].url));
     if (url) return url;
 
-    var nome = (produto && (produto.name || produto.nome)) || 'TeskBuy';
+    var nome = (produto && (produto.name || produto.nome)) || 'TEskBuy';
     var iniciais = nome.replace(/[^A-Za-zÀ-ÿ0-9 ]/g, '').split(/\s+/).slice(0, 2)
       .map(function (p) { return p.charAt(0).toUpperCase(); }).join('');
 
@@ -116,85 +116,184 @@
     }, 3600);
   }
 
+  /* ── quem é esta conta ────────────────────────────────────
+     O menu não pode depender só do papel: uma pessoa pode ser cliente,
+     afiliada, vendedora, ou as duas coisas. Isto guarda a última resposta
+     do servidor para o menu já nascer certo, e volta a perguntar em cada
+     página para não ficar preso a um estado antigo. */
+  var CHAVE_PERFIL = 'tb.perfil';
+
+  function perfilGuardado() {
+    try {
+      var g = JSON.parse(localStorage.getItem(CHAVE_PERFIL) || 'null');
+      var u = api.utilizador.obter();
+      // se mudou de conta, o que está guardado não serve
+      if (!g || !u || g.utilizador !== u.id) return null;
+      return g;
+    } catch (e) { return null; }
+  }
+
+  function guardarPerfil(dados) {
+    var u = api.utilizador.obter();
+    if (!u) { try { localStorage.removeItem(CHAVE_PERFIL); } catch (e) {} return null; }
+    var g = {
+      utilizador: u.id,
+      empresa: dados && dados.empresa ? dados.empresa : null,
+      afiliado: dados && dados.afiliado ? dados.afiliado : null,
+    };
+    try { localStorage.setItem(CHAVE_PERFIL, JSON.stringify(g)); } catch (e) {}
+    return g;
+  }
+
+  function ehVendedor(perfil) {
+    return Boolean(perfil && perfil.empresa && perfil.empresa.status === 'aprovada');
+  }
+  function ehAfiliado(perfil) {
+    return Boolean(perfil && perfil.afiliado && perfil.afiliado.status === 'aprovada');
+  }
+
+  /* ── foto de perfil ───────────────────────────────────────
+     Sem foto mostramos a inicial, nunca o boneco genérico. */
+  function avatar(u) {
+    if (u && u.avatar_url) {
+      return '<img class="avatar" src="' + escapar(u.avatar_url) + '" alt="A minha conta">';
+    }
+    var nome = String((u && (u.nome || u.email)) || '?').trim();
+    return '<span class="avatar avatar-letra">' + escapar(nome.charAt(0).toUpperCase()) + '</span>';
+  }
+
+  /* ── opções do menu conforme o tipo de conta ──────────────
+     Segue a matriz da revisão. É o estado real da sessão que manda:
+     nada é escondido com CSS. */
+  function opcoesDaConta(u, perfil) {
+    function item(href, icone, texto) {
+      return '<a class="nav-contacto" href="' + href + '">' + icone + '<span>' + texto + '</span></a>';
+    }
+
+    if (!u) {
+      // o "Entrar" já está no cabeçalho, ao lado; aqui só duplicava
+      return item('/carrinho', ico.carrinho, 'O meu carrinho') +
+             item('/parceiro', ico.camiao, 'Vender na TEskBuy') +
+             item('/parceiro?tipo=afiliado', ico.estrela, 'Ser Afiliado');
+    }
+
+    var vendedor = ehVendedor(perfil);
+    var afiliado = ehAfiliado(perfil);
+    var html = item('/conta', ico.conta, 'A minha conta');
+
+    if (vendedor) html += item('/comerciante', ico.camiao, 'Área de Vendas');
+    if (afiliado) html += item('/afiliado', ico.estrela, 'Área de Afiliado');
+    // quem ainda não é nem uma coisa nem outra vê os dois convites
+    if (!afiliado && !vendedor) {
+      html += item('/parceiro?tipo=afiliado', ico.estrela, 'Tornar-se Afiliado');
+      html += item('/parceiro', ico.camiao, 'Vender na TEskBuy');
+    }
+
+    html += item('/favoritos', ico.coracao, 'Favoritos');
+    html += item('/carrinho', ico.carrinho, 'O meu carrinho');
+    html += item('/encomendas', ico.camiao, 'As minhas encomendas');
+    html += item('/conta?sep=mensagens', ico.correio, 'Mensagens');
+    html += item('/conta?sep=definicoes', ico.escudo, 'Definições');
+    return html;
+  }
+
+  /** Os blocos todos da gaveta, na ordem pedida na revisão. */
+  function blocosDaGaveta(u, perfil) {
+    var r = CONTEUDO_PADRAO.rodape;
+
+    return '' +
+      '<div class="nav-bloco" id="nav-bloco-categorias">' +
+        '<h4>Categorias</h4>' +
+        '<div class="nav-categorias" id="nav-categorias">' +
+          '<a class="nav-contacto" href="/loja"><span>Ver toda a loja</span></a>' +
+        '</div>' +
+      '</div>' +
+      '<div class="nav-bloco" id="nav-bloco-conta">' +
+        '<h4>' + (u ? 'A minha conta' : 'Comece por aqui') + '</h4>' +
+        opcoesDaConta(u, perfil) +
+      '</div>' +
+      '<div class="nav-bloco">' +
+        '<h4>Precisa de ajuda?</h4>' +
+        '<a class="nav-contacto" id="nav-tel-lig" href="tel:">' +
+          ico.telefone + '<span id="nav-telefone">' + escapar(r.telefone) + '</span></a>' +
+        '<a class="nav-contacto" href="mailto:' + escapar(r.email) + '" id="nav-email-lig">' +
+          ico.correio + '<span id="nav-email">' + escapar(r.email) + '</span></a>' +
+      '</div>' +
+      '<div class="nav-bloco">' +
+        '<h4>Siga-nos</h4>' +
+        '<div class="nav-redes">' +
+          '<a id="nav-facebook" href="' + escapar(r.facebook) + '" target="_blank" rel="noopener" aria-label="Facebook">' +
+            ico.facebook + '</a>' +
+          '<a id="nav-whatsapp" href="' + escapar(r.whatsapp) + '" target="_blank" rel="noopener" aria-label="WhatsApp">' +
+            ico.whatsapp + '</a>' +
+        '</div>' +
+      '</div>' +
+      '<div class="nav-bloco">' +
+        '<h4>Métodos de pagamento</h4>' +
+        '<div class="nav-pagamentos">' +
+          PAGAMENTOS.map(function (m) {
+            return '<img src="/assets/img/pagamentos/' + m.ficheiro + '" alt="' + escapar(m.nome) +
+              '" style="height:' + m.altura + 'px" loading="lazy">';
+          }).join('') +
+        '</div>' +
+        '<p class="pequeno silenciado" style="margin-top:8px">Pague também em numerário na entrega.</p>' +
+      '</div>';
+  }
+
   /* ── cabeçalho ──────────────────────────────────────────── */
   function cabecalho(paginaActiva) {
     var alvo = document.getElementById('cabecalho');
     if (!alvo) return;
 
     var u = api.utilizador.obter();
-    var ligacoes = [
-      { href: '/loja', texto: 'Loja', id: 'loja' },
-      { href: '/loja?categoria=telemoveis', texto: 'Telemóveis', id: 'telemoveis' },
-      { href: '/loja?categoria=computadores', texto: 'Computadores', id: 'computadores' },
-      { href: '/loja?categoria=impressoras', texto: 'Impressoras', id: 'impressoras' },
-      { href: '/loja?categoria=livros', texto: 'Livros', id: 'livros' },
-    ];
+    // No telemóvel a lupa e o carrinho só ficam na página inicial; nas outras
+    // páginas o cabeçalho fica com o essencial. O CSS trata do resto.
+    var naInicio = /^\/(index\.html)?$/.test(location.pathname);
+    document.body.classList.toggle('fora-do-inicio', !naInicio);
 
     alvo.className = 'cabecalho';
     alvo.innerHTML =
       '<div class="env cabecalho-int">' +
         '<button class="icone-btn menu-btn" id="btn-menu" aria-label="Abrir menu">' + ico.menu + '</button>' +
-        '<a class="logo" href="/" aria-label="TeskBuy — início">' +
-          '<img src="/assets/img/logo-full.png" alt="TeskBuy">' +
+        '<a class="logo" href="/" aria-label="TEskBuy — início">' +
+          '<img class="logo-completo" src="/assets/img/logo-full.png" alt="TEskBuy">' +
+          '<img class="logo-icone" src="/assets/img/logo-icon.png" alt="TEskBuy">' +
         '</a>' +
         '<nav class="nav" id="nav">' +
-          ligacoes.map(function (l) {
-            return '<a href="' + l.href + '"' + (paginaActiva === l.id ? ' class="activo"' : '') + '>' + l.texto + '</a>';
-          }).join('') +
-          // só visível quando o menu abre no telemóvel
-          '<div class="nav-extra">' +
-            '<div class="nav-bloco">' +
-              '<h4>A minha conta</h4>' +
-              (u
-                ? '<a class="nav-contacto" href="/conta">' + ico.conta + '<span>A minha conta</span></a>' +
-                  '<a class="nav-contacto" href="/encomendas">' + ico.carrinho + '<span>As minhas encomendas</span></a>'
-                : '<a class="nav-contacto" href="/entrar">' + ico.conta + '<span>Entrar</span></a>' +
-                  '<a class="nav-contacto" href="/entrar?registo=1">' + ico.mais + '<span>Criar conta</span></a>') +
-              '<a class="nav-contacto" href="/favoritos">' + ico.coracao + '<span>Favoritos</span></a>' +
-              '<a class="nav-contacto" href="/parceiro">' + ico.camiao + '<span>Vender na TeskBuy</span></a>' +
-              '<a class="nav-contacto" href="/afiliado">' + ico.estrela + '<span>Área de afiliado</span></a>' +
-            '</div>' +
-            '<div class="nav-bloco">' +
-              '<h4>Precisa de ajuda?</h4>' +
-              '<a class="nav-contacto" id="nav-tel-lig" href="tel:">' +
-                ico.telefone + '<span id="nav-telefone">' + escapar(CONTEUDO_PADRAO.rodape.telefone) + '</span></a>' +
-              '<a class="nav-contacto" href="mailto:' + escapar(CONTEUDO_PADRAO.rodape.email) + '" id="nav-email-lig">' +
-                ico.correio + '<span id="nav-email">' + escapar(CONTEUDO_PADRAO.rodape.email) + '</span></a>' +
-            '</div>' +
-            '<div class="nav-bloco">' +
-              '<h4>Siga-nos</h4>' +
-              '<div class="nav-redes">' +
-                '<a id="nav-facebook" href="' + escapar(CONTEUDO_PADRAO.rodape.facebook) + '" target="_blank" rel="noopener" aria-label="Facebook">' +
-                  ico.facebook + '</a>' +
-                '<a id="nav-whatsapp" href="' + escapar(CONTEUDO_PADRAO.rodape.whatsapp) + '" target="_blank" rel="noopener" aria-label="WhatsApp">' +
-                  ico.whatsapp + '</a>' +
-              '</div>' +
+          // "Categorias" abre um painel com tudo o que existe na loja
+          '<div class="cat-menu">' +
+            '<button type="button" class="cat-botao' + (paginaActiva === 'loja' ? ' activo' : '') + '" ' +
+              'id="btn-categorias" aria-expanded="false" aria-controls="painel-categorias">' +
+              '<span>Categorias</span>' + ico.chevron +
+            '</button>' +
+            '<div class="cat-painel" id="painel-categorias" hidden>' +
+              '<p class="pequeno silenciado" style="padding:6px 4px">A carregar…</p>' +
             '</div>' +
           '</div>' +
+          // só visível quando o menu abre no telemóvel
+          '<div class="nav-extra" id="nav-extra">' + blocosDaGaveta(u, perfilGuardado()) + '</div>' +
         '</nav>' +
         '<form class="procura" id="form-procura" role="search">' +
           ico.procurar +
           '<input type="search" name="q" id="campo-procura" placeholder="Procurar produtos…" aria-label="Procurar na loja">' +
           '<select id="procura-categoria" aria-label="Categoria a procurar">' +
-            '<option value="">Categorias</option>' +
+            '<option value="">Todas</option>' +
           '</select>' +
         '</form>' +
         '<div class="accoes">' +
           '<button class="icone-btn" id="btn-procura-movel" aria-label="Procurar">' + ico.procurar + '</button>' +
+          // o sino só existe para quem tem sessão
           (u
             ? '<button class="icone-btn" id="btn-sino" aria-label="Notificações">' + ico.sino +
                 '<span class="crachas" id="crachas-sino"></span></button>'
             : '') +
-          '<a class="icone-btn" href="/favoritos" aria-label="Favoritos">' + ico.coracao +
-            '<span class="crachas" id="crachas-favoritos"></span></a>' +
-          '<a class="icone-btn" href="/carrinho" aria-label="Carrinho">' + ico.carrinho +
+          // o carrinho fica sempre à vista: quem entra de novo tem de poder comprar
+          '<a class="icone-btn accao-carrinho" href="/carrinho" aria-label="Carrinho">' + ico.carrinho +
             '<span class="crachas" id="crachas-carrinho"></span></a>' +
+          // sem sessão não há ícone de pessoa nenhum, só a porta de entrada
           (u
-            ? '<a class="conta-texto" href="/conta">' + ico.conta +
-                '<span><small>A minha conta</small><b>' +
-                escapar(String(u.nome || u.email || '').split(' ')[0] || 'Conta') + '</b></span></a>'
-            : '<a class="conta-texto" href="/entrar">' + ico.conta +
-                '<span><small>Entrar</small><b>Criar conta</b></span></a>') +
+            ? '<a class="avatar-ligacao" href="/conta" aria-label="A minha conta">' + avatar(u) + '</a>'
+            : '<a class="btn btn-secundario btn-entrar" href="/entrar">Entrar</a>') +
         '</div>' +
       '</div>';
 
@@ -225,6 +324,8 @@
     window.addEventListener('resize', function () {
       if (window.innerWidth > 1120 && nav.classList.contains('aberta')) menu(false);
     });
+
+    ligarPainelCategorias();
 
     if (u) ligarSino();
 
@@ -259,11 +360,37 @@
     var escolhaCategoria = document.getElementById('procura-categoria');
     categorias(function (lista) {
       escolhaCategoria.innerHTML =
-        '<option value="">Categorias</option>' +
+        '<option value="">Todas</option>' +
         lista.map(function (c) {
           return '<option value="' + escapar(c.slug) + '">' + escapar(c.name) + '</option>';
         }).join('');
       if (params.get('categoria')) escolhaCategoria.value = params.get('categoria');
+
+      // painel do computador
+      var painel = document.getElementById('painel-categorias');
+      if (painel) {
+        painel.innerHTML = lista.length
+          ? '<div class="cat-grelha">' +
+              lista.map(function (c) {
+                return '<a href="/loja?categoria=' + encodeURIComponent(c.slug) + '">' +
+                  '<strong>' + escapar(c.name) + '</strong>' +
+                  (c.description ? '<span>' + escapar(c.description) + '</span>' : '') +
+                '</a>';
+              }).join('') +
+            '</div>' +
+            '<a class="cat-tudo" href="/loja">Ver toda a loja' + ico.seta + '</a>'
+          : '<a class="cat-tudo" href="/loja">Ver toda a loja' + ico.seta + '</a>';
+      }
+
+      // as mesmas categorias, agora dentro da gaveta do telemóvel
+      var caixa = document.getElementById('nav-categorias');
+      if (!caixa) return;
+      caixa.innerHTML =
+        lista.map(function (c) {
+          return '<a class="nav-contacto" href="/loja?categoria=' + encodeURIComponent(c.slug) + '">' +
+            '<span>' + escapar(c.name) + '</span></a>';
+        }).join('') +
+        '<a class="nav-contacto nav-ver-tudo" href="/loja"><span>Ver toda a loja</span>' + ico.seta + '</a>';
     });
 
     document.getElementById('form-procura').addEventListener('submit', function (ev) {
@@ -277,7 +404,98 @@
       location.href = '/loja' + (qs ? '?' + qs : '');
     });
 
+    /* Perguntar ao servidor o que esta conta é, e voltar a desenhar a
+       gaveta se afinal é vendedora ou afiliada. */
+    if (u) {
+      api.get('/definicoes/perfil')
+        .then(function (r) {
+          var antes = JSON.stringify(perfilGuardado() || {});
+          var agora = guardarPerfil(r.dados);
+          if (JSON.stringify(agora) === antes) return;
+          var bloco = document.getElementById('nav-bloco-conta');
+          if (bloco) {
+            bloco.innerHTML = '<h4>A minha conta</h4>' + opcoesDaConta(u, agora);
+          }
+        })
+        .catch(function () { /* menu fica com o que já tinha */ });
+    } else {
+      try { localStorage.removeItem(CHAVE_PERFIL); } catch (e) { /* nada */ }
+      conviteVisitante();
+    }
+
     actualizarCrachas();
+  }
+
+  /* ── convite a quem chega sem sessão ──────────────────────
+     Aparece uma vez, encosta ao fundo, fecha-se e não volta a chatear
+     durante uma semana. Nunca tapa a navegação. */
+  var CHAVE_CONVITE = 'tb.convite';
+
+  function conviteVisitante() {
+    if (document.getElementById('convite-entrar')) return;
+    // nas próprias páginas de entrada seria absurdo
+    if (/^\/(entrar|registar|recuperar|nova-palavra-passe)/.test(location.pathname)) return;
+
+    try {
+      var ate = Number(localStorage.getItem(CHAVE_CONVITE) || 0);
+      if (ate && Date.now() < ate) return;
+    } catch (e) { /* segue */ }
+
+    var caixa = document.createElement('div');
+    caixa.id = 'convite-entrar';
+    caixa.className = 'convite';
+    caixa.setAttribute('role', 'complementary');
+    caixa.innerHTML =
+      '<button class="convite-fechar" aria-label="Fechar">' + ico.fechar + '</button>' +
+      '<div class="convite-texto">' +
+        '<strong>Bem-vindo à TEskBuy</strong>' +
+        '<span>Entre para guardar favoritos, acompanhar encomendas e comprar mais depressa.</span>' +
+      '</div>' +
+      '<div class="convite-accoes">' +
+        '<a class="btn btn-principal" href="/entrar">Entrar</a>' +
+        '<a class="btn btn-secundario" href="/registar">Criar conta</a>' +
+      '</div>';
+
+    function fechar() {
+      caixa.classList.remove('visivel');
+      try { localStorage.setItem(CHAVE_CONVITE, String(Date.now() + 7 * 24 * 3600 * 1000)); } catch (e) {}
+      setTimeout(function () { caixa.remove(); }, 300);
+    }
+    caixa.querySelector('.convite-fechar').addEventListener('click', fechar);
+    caixa.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', fechar); });
+
+    document.body.appendChild(caixa);
+    setTimeout(function () { caixa.classList.add('visivel'); }, 1200);
+  }
+
+  /* ── painel de categorias do computador ───────────────────
+     Abre com clique, fecha com clique fora, com Escape e ao escolher. */
+  function ligarPainelCategorias() {
+    var botao = document.getElementById('btn-categorias');
+    var painel = document.getElementById('painel-categorias');
+    if (!botao || !painel) return;
+
+    function abrir(sim) {
+      painel.hidden = !sim;
+      painel.classList.toggle('aberto', sim);
+      botao.classList.toggle('aberto', sim);
+      botao.setAttribute('aria-expanded', sim ? 'true' : 'false');
+    }
+
+    botao.addEventListener('click', function (ev) {
+      ev.stopPropagation();
+      abrir(painel.hidden);
+    });
+    painel.addEventListener('click', function (ev) {
+      if (ev.target.closest('a')) abrir(false);
+    });
+    document.addEventListener('click', function (ev) {
+      if (painel.hidden) return;
+      if (!painel.contains(ev.target) && !botao.contains(ev.target)) abrir(false);
+    });
+    document.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && !painel.hidden) abrir(false);
+    });
   }
 
   /* ── sino de notificações ─────────────────────────────────
@@ -536,7 +754,7 @@
           coluna('Empresa',
             '<li><a href="/informacoes?p=sobre-nos">Sobre Nós</a></li>' +
             '<li><a href="/informacoes?p=contacte-nos">Contacte-nos</a></li>' +
-            '<li><a href="/parceiro">Vender na TeskBuy</a></li>' +
+            '<li><a href="/parceiro">Vender na TEskBuy</a></li>' +
             '<li><a href="/parceiro">Programa de afiliados</a></li>') +
           coluna('Links úteis',
             '<li><a href="/loja">Pesquisa</a></li>' +
@@ -564,7 +782,7 @@
             '</div>' +
           '</div>' +
           '<p class="rodape-direitos">Copyright ' + new Date().getFullYear() +
-            ' TeskBuy. Todos os direitos reservados.</p>' +
+            ' TEskBuy. Todos os direitos reservados.</p>' +
         '</div>' +
       '</div>';
 

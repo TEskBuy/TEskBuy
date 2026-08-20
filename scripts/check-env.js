@@ -16,7 +16,7 @@ const linhas = [
   ['Origens CORS', env.cors.length ? env.cors.join(', ') : '(só o próprio site)'],
 ];
 
-console.log('\n  TeskBuy — configuração\n');
+console.log('\n  TEskBuy — configuração\n');
 linhas.forEach(([nome, valor]) => console.log('  ' + nome.padEnd(26) + valor));
 
 if (!env.supabase.url || !env.supabase.anonKey) {

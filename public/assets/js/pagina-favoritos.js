@@ -1,4 +1,4 @@
-/* TeskBuy — favoritos */
+/* TEskBuy — favoritos */
 (function () {
   'use strict';
   var api = window.TBApi, ui = window.TBUI, estado = window.TBEstado;

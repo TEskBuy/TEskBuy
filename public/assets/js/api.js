@@ -1,5 +1,5 @@
 /* ============================================================
-   TeskBuy — cliente da API
+   TEskBuy — cliente da API
    Trata da sessão, renovação de token e formato de resposta.
    ============================================================ */
 (function (global) {
@@ -20,7 +20,12 @@
   var sessao = {
     obter: function () { return lerJSON(CHAVE_SESSAO); },
     guardar: function (s) { gravarJSON(CHAVE_SESSAO, s); },
-    limpar: function () { gravarJSON(CHAVE_SESSAO, null); gravarJSON(CHAVE_UTILIZADOR, null); },
+    limpar: function () {
+      gravarJSON(CHAVE_SESSAO, null);
+      gravarJSON(CHAVE_UTILIZADOR, null);
+      // o que a conta é (vendedora, afiliada) sai com a sessão
+      try { localStorage.removeItem('tb.perfil'); } catch (e) { /* nada */ }
+    },
     token: function () { var s = lerJSON(CHAVE_SESSAO); return s && s.access_token; },
     activa: function () { return Boolean(lerJSON(CHAVE_SESSAO)); },
   };

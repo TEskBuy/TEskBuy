@@ -1,4 +1,4 @@
-/* TeskBuy — Área do Afiliado */
+/* TEskBuy — Área do Afiliado */
 (function () {
   'use strict';
   var api = window.TBApi, ui = window.TBUI;
@@ -10,8 +10,8 @@
   var vista = (location.hash || '').replace('#', '') || 'resumo';
 
   var ESTADO_PARCERIA = {
-    pendente: 'À espera da TeskBuy',
-    em_analise_admin: 'Em análise pela TeskBuy',
+    pendente: 'À espera da TEskBuy',
+    em_analise_admin: 'Em análise pela TEskBuy',
     enviado_vendedor: 'À espera da empresa',
     aceite: 'Aceite',
     recusado: 'Recusada',
@@ -96,7 +96,7 @@
             '<h3 style="margin-bottom:8px">Como funciona</h3>' +
             '<p class="silenciado pequeno" style="margin-bottom:10px">' +
               'Só pode divulgar produtos de empresas que aceitaram a sua parceria. ' +
-              'Cada pedido passa primeiro pela TeskBuy e depois pela empresa.</p>' +
+              'Cada pedido passa primeiro pela TEskBuy e depois pela empresa.</p>' +
             '<p class="silenciado pequeno">' +
               'Uma comissão fica <strong>confirmada</strong> quando a encomenda é entregue, ' +
               'e é <strong>anulada</strong> se for cancelada ou devolvida.</p>' +
@@ -226,7 +226,7 @@
       document.getElementById('painel-afiliado').innerHTML =
         '<h1 style="margin-bottom:4px">As minhas parcerias</h1>' +
         '<p class="silenciado pequeno" style="margin-bottom:18px">' +
-          'Cada pedido passa pela TeskBuy e depois pela empresa.</p>' +
+          'Cada pedido passa pela TEskBuy e depois pela empresa.</p>' +
         (itens.length
           ? itens.map(function (p) {
               return '<div class="cartao" style="margin-bottom:12px">' +
@@ -246,7 +246,7 @@
                     ui.escapar(p.nota_empresa) + '</p>'
                   : '') +
                 (p.nota_admin
-                  ? '<p class="pequeno silenciado" style="margin-top:6px">TeskBuy: ' +
+                  ? '<p class="pequeno silenciado" style="margin-top:6px">TEskBuy: ' +
                     ui.escapar(p.nota_admin) + '</p>'
                   : '') +
                 '<p class="pequeno silenciado" style="margin-top:8px">Pedida em ' +

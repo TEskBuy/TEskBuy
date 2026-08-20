@@ -1,4 +1,4 @@
-/* TeskBuy — página inicial */
+/* TEskBuy — página inicial */
 (function () {
   'use strict';
   var api = window.TBApi, ui = window.TBUI;

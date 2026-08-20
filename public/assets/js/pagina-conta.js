@@ -1,4 +1,4 @@
-/* TeskBuy — a minha conta */
+/* TEskBuy — a minha conta */
 (function () {
   'use strict';
   var api = window.TBApi, ui = window.TBUI, estado = window.TBEstado;
@@ -21,6 +21,16 @@
     conteudo.innerHTML = '<div style="padding:30px 0">' + ui.esqueletos(2, 'esqueleto') + '</div>';
   }
 
+  /** O que esta conta é, segundo a última resposta do servidor. */
+  function contaEh() {
+    var g = null;
+    try { g = JSON.parse(localStorage.getItem('tb.perfil') || 'null'); } catch (e) { g = null; }
+    return {
+      empresa: Boolean(g && g.empresa && g.empresa.status === 'aprovada'),
+      afiliado: Boolean(g && g.afiliado && g.afiliado.status === 'aprovada'),
+    };
+  }
+
   function moldura(interior) {
     var u = api.utilizador.obter() || {};
     var separadores = [
@@ -37,7 +47,7 @@
         '<aside>' +
           '<div class="cartao" style="margin-bottom:16px">' +
             '<p class="mono pequeno silenciado">Conta</p>' +
-            '<p style="margin-top:6px;font-size:16px">' + ui.escapar(perfil.full_name || 'Cliente TeskBuy') + '</p>' +
+            '<p style="margin-top:6px;font-size:16px">' + ui.escapar(perfil.full_name || 'Cliente TEskBuy') + '</p>' +
             '<p class="pequeno silenciado" style="margin-top:2px">' + ui.escapar(perfil.email || '') + '</p>' +
             (perfil.role !== 'cliente'
               ? '<p class="pilula" style="margin-top:10px;display:inline-block">' +
@@ -50,6 +60,11 @@
             }).join('') +
             '<a href="/encomendas">As minhas encomendas</a>' +
             '<a href="/favoritos">Favoritos</a>' +
+            // "Vender na TEskBuy" saiu do menu principal e vive aqui
+            (contaEh().empresa
+              ? '<a href="/comerciante">Área de Vendas</a>'
+              : '<a href="/parceiro">Vender na TEskBuy</a>') +
+            (contaEh().afiliado ? '<a href="/afiliado">Área de Afiliado</a>' : '') +
             (u.papel === 'admin' || u.papel === 'gestor' ? '<a href="/admin">Painel de gestão</a>' : '') +
             '<button id="terminar" style="color:#ff8a86">Terminar sessão</button>' +
           '</nav>' +
@@ -76,8 +91,30 @@
 
   /* ── dados pessoais ─────────────────────────────────────── */
   function painelDados() {
+    var u = api.utilizador.obter() || {};
+    var foto = perfil.avatar_url || u.avatar_url;
+    var inicial = String(perfil.full_name || perfil.email || '?').trim().charAt(0).toUpperCase();
+
     return '<h1 style="padding-top:4px">Os meus dados</h1>' +
       '<p class="silenciado pequeno" style="margin:6px 0 20px">Usamos estes dados para o contactar sobre as encomendas.</p>' +
+      '<div class="cartao" style="margin-bottom:16px">' +
+        '<div class="perfil-foto">' +
+          (foto
+            ? '<img class="avatar" id="foto-actual" src="' + ui.escapar(foto) + '" alt="A minha foto">'
+            : '<span class="avatar avatar-letra" id="foto-actual">' + ui.escapar(inicial) + '</span>') +
+          '<div>' +
+            '<strong>Foto de perfil</strong>' +
+            '<p class="pequeno silenciado">Aparece no topo do site. PNG, JPG ou WEBP.</p>' +
+            '<div class="linha-flex" style="margin-top:10px;gap:8px">' +
+              '<button class="btn btn-secundario" id="btn-foto" type="button">' +
+                (foto ? 'Mudar foto' : 'Carregar foto') + '</button>' +
+              (foto ? '<button class="pilula" id="btn-foto-remover" type="button">Remover</button>' : '') +
+            '</div>' +
+            '<input type="file" id="ficheiro-foto" accept="image/png,image/jpeg,image/webp" hidden>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      avisoDadosVerdadeiros() +
       '<form class="cartao" id="form-perfil">' +
         '<div class="campo"><label for="nome">Nome completo</label>' +
           '<input id="nome" value="' + ui.escapar(perfil.full_name || '') + '" required>' +
@@ -92,7 +129,65 @@
       '</form>';
   }
 
+  /** Aviso pedido na revisão: o nome tem de ser o do documento. */
+  function avisoDadosVerdadeiros() {
+    return '<div class="aviso-dados">' + ui.ico.escudo +
+      '<div><strong>Use os seus dados verdadeiros.</strong> O nome deve ser igual ao do ' +
+      'documento oficial. As empresas devem usar o nome e os documentos legais da empresa. ' +
+      'Informação falsa ou incorrecta pode levar a restrições ou ao encerramento da conta.</div></div>';
+  }
+
+  /** Carregar e trocar a foto de perfil. */
+  function ligarFoto() {
+    var botao = document.getElementById('btn-foto');
+    var campo = document.getElementById('ficheiro-foto');
+    var remover = document.getElementById('btn-foto-remover');
+    if (!botao || !campo) return;
+
+    function gravar(url, mensagem) {
+      return api.patch('/utilizadores/eu', { avatar_url: url })
+        .then(function (r) {
+          perfil = r.dados;
+          var u = api.utilizador.obter() || {};
+          u.avatar_url = url;
+          api.utilizador.guardar(u);
+          ui.notificar(mensagem, 'ok');
+          ui.cabecalho();          // o cabeçalho passa a mostrar a foto nova
+          desenhar();
+        });
+    }
+
+    botao.addEventListener('click', function () { campo.click(); });
+
+    campo.addEventListener('change', function () {
+      var ficheiro = campo.files && campo.files[0];
+      if (!ficheiro) return;
+      if (ficheiro.size > 5 * 1024 * 1024) {
+        ui.notificar('A imagem não pode passar dos 5 MB.', 'erro');
+        return;
+      }
+      botao.disabled = true;
+      botao.textContent = 'A enviar…';
+      ui.carregarFicheiro(ficheiro, 'avatar')
+        .then(function (f) { return gravar(f.url, 'Foto actualizada.'); })
+        .catch(function (e) {
+          botao.disabled = false;
+          botao.textContent = 'Carregar foto';
+          ui.notificar(e.message || 'Não foi possível enviar a foto.', 'erro');
+        });
+    });
+
+    if (remover) {
+      remover.addEventListener('click', function () {
+        gravar(null, 'Foto removida.').catch(function (e) {
+          ui.notificar(e.message || 'Não foi possível remover.', 'erro');
+        });
+      });
+    }
+  }
+
   function ligarDados() {
+    ligarFoto();
     var form = document.getElementById('form-perfil');
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
@@ -288,7 +383,7 @@
       document.getElementById('lista-conversas').innerHTML =
         '<h2 style="margin-bottom:6px">Mensagens</h2>' +
         '<p class="silenciado pequeno" style="margin-bottom:18px">' +
-          'Conversas com as empresas parceiras. Para falar com a TeskBuy, use uma denúncia.</p>' +
+          'Conversas com as empresas parceiras. Para falar com a TEskBuy, use uma denúncia.</p>' +
         (itens.length
           ? itens.map(function (c) {
               return '<div class="cartao" style="margin-bottom:12px">' +
@@ -347,7 +442,7 @@
       document.getElementById('lista-denuncias').innerHTML =
         '<h2 style="margin-bottom:6px">Denúncias</h2>' +
         '<p class="silenciado pequeno" style="margin-bottom:18px">' +
-          'Problemas que comunicou à TeskBuy e o que foi feito.</p>' +
+          'Problemas que comunicou à TEskBuy e o que foi feito.</p>' +
         (itens.length
           ? itens.map(function (d) {
               return '<div class="cartao" style="margin-bottom:12px">' +
@@ -503,7 +598,7 @@
     });
 
     document.getElementById('del-conta').addEventListener('click', function (ev) {
-      if (!confirm('Pedir a eliminação da sua conta TeskBuy?')) return;
+      if (!confirm('Pedir a eliminação da sua conta TEskBuy?')) return;
       var b = ev.currentTarget;
       b.disabled = true;
       api.post('/definicoes/eliminar-conta', {

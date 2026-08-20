@@ -1,4 +1,4 @@
-/* TeskBuy — detalhe da encomenda */
+/* TEskBuy — detalhe da encomenda */
 (function () {
   'use strict';
   var api = window.TBApi, ui = window.TBUI;

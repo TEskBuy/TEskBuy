@@ -1,5 +1,5 @@
 /* ============================================================
-   TeskBuy — estado local (carrinho e favoritos de visitante)
+   TEskBuy — estado local (carrinho e favoritos de visitante)
    O carrinho de quem ainda não tem sessão vive no dispositivo
    e é enviado para a conta assim que o cliente entra.
    ============================================================ */

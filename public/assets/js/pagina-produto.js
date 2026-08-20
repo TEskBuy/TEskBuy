@@ -1,4 +1,4 @@
-/* TeskBuy — ficha de produto */
+/* TEskBuy — ficha de produto */
 (function () {
   'use strict';
   var api = window.TBApi, ui = window.TBUI, estado = window.TBEstado;
@@ -137,7 +137,7 @@
   }
 
   function desenhar(p, relacionados, avaliacoes) {
-    document.title = p.name + ' — TeskBuy';
+    document.title = p.name + ' — TEskBuy';
     var antigo = Number(p.compare_at_price || 0);
     var preco = Number(p.price);
     var desconto = antigo > preco ? Math.round(((antigo - preco) / antigo) * 100) : 0;
@@ -183,7 +183,7 @@
           // quem vende: a própria loja, ou uma empresa parceira
           '<p class="pequeno" style="margin:-10px 0 18px">' +
             '<span class="silenciado">Vendido por</span> <strong>' +
-            ui.escapar(p.vendedor ? p.vendedor.name : 'TeskBuy') + '</strong>' +
+            ui.escapar(p.vendedor ? p.vendedor.name : 'TEskBuy') + '</strong>' +
             (p.vendedor && p.vendedor.rating_count
               ? ' <span class="silenciado">· ' + Number(p.vendedor.rating).toFixed(1) + '/5 em ' +
                 p.vendedor.rating_count + ' avaliação(ões)</span>'
@@ -223,7 +223,7 @@
               (favorito ? ui.ico.coracaoCheio : ui.ico.coracao) + '<span>' + (favorito ? 'Guardado' : 'Guardar') + '</span></button>' +
           '</div>' +
           '<a class="btn btn-secundario btn-largo" href="https://wa.me/244943277184?text=' +
-            encodeURIComponent('Olá TeskBuy, tenho interesse no produto: ' + p.name) + '" target="_blank" rel="noopener">Perguntar pelo WhatsApp</a>' +
+            encodeURIComponent('Olá TEskBuy, tenho interesse no produto: ' + p.name) + '" target="_blank" rel="noopener">Perguntar pelo WhatsApp</a>' +
         '</div>' +
       '</div>' +
 
@@ -246,7 +246,7 @@
         '<div id="aba-entrega" class="esconder" style="max-width:700px">' +
           '<p style="margin-bottom:14px"><strong>Entrega.</strong> Luanda em 24 a 48 horas; restantes províncias entre 3 e 7 dias úteis. Entrega gratuita acima de 250.000 Kz.</p>' +
           '<p style="margin-bottom:14px"><strong>Pagamento.</strong> Multicaixa Express, transferência bancária ou numerário na entrega.</p>' +
-          '<p><strong>Garantia.</strong> ' + (p.warranty_months ? p.warranty_months + ' meses cobertos pela TeskBuy.' : 'Este artigo não inclui garantia adicional.') +
+          '<p><strong>Garantia.</strong> ' + (p.warranty_months ? p.warranty_months + ' meses cobertos pela TEskBuy.' : 'Este artigo não inclui garantia adicional.') +
           ' Para trocas, contacte-nos até 7 dias após a entrega pelo +244 943 277 184.</p>' +
         '</div>' +
 
@@ -255,7 +255,7 @@
             ? avaliacoes.map(function (a) {
                 return '<div class="avaliacao-item">' +
                   '<div class="linha-flex" style="margin-bottom:6px">' + estrelas(a.rating) +
-                  '<strong>' + ui.escapar((a.autor && a.autor.full_name) || 'Cliente TeskBuy') + '</strong>' +
+                  '<strong>' + ui.escapar((a.autor && a.autor.full_name) || 'Cliente TEskBuy') + '</strong>' +
                   '<span class="pequeno silenciado">' + ui.data(a.created_at) + '</span></div>' +
                   (a.title ? '<p><strong>' + ui.escapar(a.title) + '</strong></p>' : '') +
                   (a.comment ? '<p class="silenciado">' + ui.escapar(a.comment) + '</p>' : '') +

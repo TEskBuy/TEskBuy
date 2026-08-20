@@ -1,4 +1,4 @@
-/* TeskBuy — Área do Comerciante (parceiros aprovados) */
+/* TEskBuy — Área do Comerciante (parceiros aprovados) */
 (function () {
   'use strict';
   var api = window.TBApi, ui = window.TBUI;
@@ -71,7 +71,7 @@
       var d = r.dados;
       document.getElementById('painel-parceiro').innerHTML =
         '<h1 style="margin-bottom:4px">' + ui.escapar(empresa.name) + '</h1>' +
-        '<p class="silenciado pequeno" style="margin-bottom:20px">Como está a sua actividade na TeskBuy.</p>' +
+        '<p class="silenciado pequeno" style="margin-bottom:20px">Como está a sua actividade na TEskBuy.</p>' +
 
         '<div class="kpis">' +
           '<div class="kpi"><p>Vendas</p><p class="v mono">' + ui.kz(d.vendas_total) + '</p></div>' +
@@ -89,7 +89,7 @@
 
         '<div class="cartao">' +
           '<h3 style="margin-bottom:8px">Como funciona a comissão</h3>' +
-          '<p class="silenciado pequeno">A TeskBuy retém ' + Number(d.taxa_comissao) +
+          '<p class="silenciado pequeno">A TEskBuy retém ' + Number(d.taxa_comissao) +
           '% de cada venda. Os valores acima são calculados sobre tudo o que já vendeu ' +
           'através da plataforma.</p>' +
         '</div>';
@@ -329,7 +329,7 @@
       document.getElementById('painel-parceiro').innerHTML =
         '<h1 style="margin-bottom:4px">Encomendas</h1>' +
         '<p class="silenciado pequeno" style="margin-bottom:18px">' +
-          'Só as linhas com produtos seus. O estado é gerido pela TeskBuy.</p>' +
+          'Só as linhas com produtos seus. O estado é gerido pela TEskBuy.</p>' +
         (itens.length
           ? itens.map(function (l) {
               var e = l.encomenda || {};
@@ -412,7 +412,7 @@
     document.getElementById('painel-parceiro').innerHTML =
       '<h1 style="margin-bottom:4px">A minha empresa</h1>' +
       '<p class="silenciado pequeno" style="margin-bottom:18px">' +
-        'A comissão e o estado da conta são definidos pela TeskBuy.</p>' +
+        'A comissão e o estado da conta são definidos pela TEskBuy.</p>' +
       '<div class="cartao">' +
         campo('e-nome', 'Nome comercial', e.name) +
         '<div class="campo-duplo">' +
@@ -492,7 +492,7 @@
         '<h1 style="margin-bottom:4px">Afiliados</h1>' +
         '<p class="silenciado pequeno" style="margin-bottom:18px">' +
           'Pessoas que querem divulgar os seus produtos e ganhar uma comissão por venda. ' +
-          'A TeskBuy já os analisou; a decisão é sua.</p>' +
+          'A TEskBuy já os analisou; a decisão é sua.</p>' +
         (itens.length
           ? itens.map(function (p) {
               var aEsperar = p.estado === 'enviado_vendedor';
@@ -503,7 +503,7 @@
                 '</div>' +
                 (p.mensagem ? '<p class="pequeno" style="margin-top:8px">' + ui.escapar(p.mensagem) + '</p>' : '') +
                 (p.nota_admin
-                  ? '<p class="pequeno silenciado" style="margin-top:6px">TeskBuy: ' + ui.escapar(p.nota_admin) + '</p>'
+                  ? '<p class="pequeno silenciado" style="margin-top:6px">TEskBuy: ' + ui.escapar(p.nota_admin) + '</p>'
                   : '') +
                 (aEsperar
                   ? '<div class="campo" style="margin:12px 0 8px;max-width:240px">' +
@@ -548,7 +548,7 @@
     }).catch(erroPainel);
   }
 
-  /* ── suporte: falar com a TeskBuy ────────────────────────── */
+  /* ── suporte: falar com a TEskBuy ────────────────────────── */
   var CATEGORIAS = {
     conta: 'Conta da empresa', produtos: 'Produtos', encomendas: 'Encomendas',
     pagamentos: 'Pagamentos', comissoes: 'Comissões', afiliados: 'Afiliados',
@@ -557,7 +557,7 @@
   };
   var ESTADO_TK = {
     aberto: 'Aberto', em_analise: 'Em análise', aguarda_empresa: 'À sua espera',
-    aguarda_admin: 'Com a TeskBuy', resolvido: 'Resolvido', fechado: 'Fechado',
+    aguarda_admin: 'Com a TEskBuy', resolvido: 'Resolvido', fechado: 'Fechado',
   };
 
   function verSuporte() {
@@ -568,7 +568,7 @@
       document.getElementById('painel-parceiro').innerHTML =
         '<h1 style="margin-bottom:4px">Suporte</h1>' +
         '<p class="silenciado pequeno" style="margin-bottom:16px">' +
-          'Este é o canal directo com a administração da TeskBuy.</p>' +
+          'Este é o canal directo com a administração da TEskBuy.</p>' +
 
         '<div class="cartao" style="margin-bottom:18px">' +
           '<h3 style="margin-bottom:12px">Nova solicitação</h3>' +
@@ -596,7 +596,7 @@
                 '<div style="margin:10px 0">' +
                   t.mensagens.map(function (m) {
                     return '<div style="padding:8px 0;border-bottom:1px solid rgba(238,247,248,.06)">' +
-                      '<p class="pequeno silenciado">' + (m.da_equipa ? 'TeskBuy' : ui.escapar(m.autor)) +
+                      '<p class="pequeno silenciado">' + (m.da_equipa ? 'TEskBuy' : ui.escapar(m.autor)) +
                         ' · ' + ui.data(m.criada_em, true) + '</p>' +
                       '<p class="pequeno" style="margin-top:4px">' + ui.escapar(m.texto) + '</p>' +
                     '</div>';
@@ -652,7 +652,7 @@
       document.getElementById('painel-parceiro').innerHTML =
         '<h1 style="margin-bottom:4px">Mensagens</h1>' +
         '<p class="silenciado pequeno" style="margin-bottom:16px">' +
-          'Conversas com clientes e afiliados. A TeskBuy não as lê.</p>' +
+          'Conversas com clientes e afiliados. A TEskBuy não as lê.</p>' +
         (itens.length
           ? itens.map(function (c) {
               return '<div class="cartao" style="margin-bottom:12px">' +

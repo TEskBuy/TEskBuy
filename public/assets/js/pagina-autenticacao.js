@@ -1,4 +1,4 @@
-/* TeskBuy — entrar, registar, recuperar e definir nova palavra-passe */
+/* TEskBuy — entrar, registar, recuperar e definir nova palavra-passe */
 (function () {
   'use strict';
   var api = window.TBApi, ui = window.TBUI;

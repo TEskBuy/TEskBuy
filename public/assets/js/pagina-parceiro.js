@@ -1,4 +1,4 @@
-/* TeskBuy — candidatura a vendedor ou a afiliado */
+/* TEskBuy — candidatura a vendedor ou a afiliado */
 (function () {
   'use strict';
   var api = window.TBApi, ui = window.TBUI;
@@ -63,14 +63,19 @@
   var opVendedor = document.getElementById('op-vendedor');
   var opAfiliado = document.getElementById('op-afiliado');
 
-  function escolher(qual) {
+  function escolher(qual, semRolar) {
     var vendedor = qual === 'vendedor';
     opVendedor.classList.toggle('activa', vendedor);
     opAfiliado.classList.toggle('activa', !vendedor);
     formVendedor.classList.toggle('visivel', vendedor);
     formAfiliado.classList.toggle('visivel', !vendedor);
-    (vendedor ? formVendedor : formAfiliado).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (!semRolar) {
+      (vendedor ? formVendedor : formAfiliado).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
+
+  /* O menu manda para cá com ?tipo=afiliado — já abre no formulário certo. */
+  if (new URLSearchParams(location.search).get('tipo') === 'afiliado') escolher('afiliado', true);
 
   opVendedor.addEventListener('click', function () { escolher('vendedor'); });
   opAfiliado.addEventListener('click', function () { escolher('afiliado'); });

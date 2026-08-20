@@ -1,4 +1,4 @@
-/* TeskBuy — histórico de encomendas do cliente */
+/* TEskBuy — histórico de encomendas do cliente */
 (function () {
   'use strict';
   var api = window.TBApi, ui = window.TBUI;

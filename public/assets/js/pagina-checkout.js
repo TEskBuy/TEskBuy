@@ -1,4 +1,4 @@
-/* TeskBuy — finalizar encomenda */
+/* TEskBuy — finalizar encomenda */
 (function () {
   'use strict';
   var api = window.TBApi, ui = window.TBUI;
