@@ -9,7 +9,7 @@ const { extrairToken } = require('../middleware/auth');
 const denunciar = capturar(async (req, res) => {
   const r = await suporte.criarDenuncia(req.utilizador.id, req.body);
   return criado(res, r, {
-    mensagem: 'Denúncia registada. A equipa TeskBuy vai analisar.',
+    mensagem: 'Denúncia registada. A equipa TEskBuy vai analisar.',
   });
 });
 

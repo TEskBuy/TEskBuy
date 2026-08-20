@@ -16,7 +16,7 @@ function numero(nome, padrao) {
   return Number.isFinite(valor) ? valor : Number(padrao);
 }
 
-// Projecto Supabase da TeskBuy (valores públicos — ver nota abaixo).
+// Projecto Supabase da TEskBuy (valores públicos — ver nota abaixo).
 // Estes valores apontavam para um projecto antigo que já não é o da loja. Se a
 // variável SUPABASE_URL faltasse, a aplicação falava com a base de dados errada
 // sem dar erro nenhum. Ficam agora certos, como rede de segurança.

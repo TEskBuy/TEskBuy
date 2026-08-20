@@ -1,4 +1,4 @@
-# Base de dados TeskBuy
+# Base de dados TEskBuy
 
 Projecto Supabase: `TEskBuy-Group-Ltd` (`ipmzxiqmzcjvyxxyoisf`), região eu-central-1.
 

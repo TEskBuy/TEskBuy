@@ -45,6 +45,17 @@ function traduzErroBd(erro) {
   if (msg.includes('ENCOMENDA_NAO_ENCONTRADA')) return erros.naoEncontrado('Encomenda não encontrada.');
   if (msg.includes('NAO_AUTORIZADO')) return erros.semPermissao();
 
+  // Falta de permissão na base de dados. Sem isto aparecia como "erro no
+  // servidor", que não diz nada a ninguém e esconde uma política em falta.
+  if (erro.code === '42501' || /row-level security|permission denied/i.test(msg)) {
+    return new ErroApi(
+      'Não tem permissão para esta operação.',
+      403,
+      'SEM_PERMISSAO',
+      { origem: 'base_de_dados' }
+    );
+  }
+
   if (erro.code === '23505') return new ErroApi('Este registo já existe.', 409, 'DUPLICADO');
   if (erro.code === '23503') return new ErroApi('Referência inválida.', 400, 'REFERENCIA_INVALIDA');
   if (erro.code === 'PGRST116') return erros.naoEncontrado();

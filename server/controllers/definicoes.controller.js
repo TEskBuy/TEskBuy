@@ -40,7 +40,7 @@ const apagarMetodo = capturar(async (req, res) => {
 const pedirEliminacao = capturar(async (req, res) => {
   const r = await definicoes.pedirEliminacao(extrairToken(req), req.utilizador.id, req.body.motivo);
   return ok(res, r, {
-    mensagem: 'Pedido registado. A equipa TeskBuy vai tratar e avisa-o do resultado.',
+    mensagem: 'Pedido registado. A equipa TEskBuy vai tratar e avisa-o do resultado.',
   });
 });
 

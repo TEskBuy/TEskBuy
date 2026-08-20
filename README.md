@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="public/assets/img/logo-full.png" alt="TeskBuy" width="330">
+  <img src="public/assets/img/logo-full.png" alt="TEskBuy" width="330">
 </p>
 
 <p align="center">
@@ -80,7 +80,7 @@ npm run check     # mostra a configuração activa
 npm run dev       # http://localhost:3000
 ```
 
-Funciona sem `.env`: os valores por omissão apontam para o Supabase da TeskBuy e usam
+Funciona sem `.env`: os valores por omissão apontam para o Supabase da TEskBuy e usam
 apenas a chave publicável. Para outro projecto ou outras taxas de entrega, copie
 `.env.example` para `.env`.
 
@@ -217,4 +217,4 @@ migração e para criar o primeiro administrador.
 
 ---
 
-TeskBuy Group Ltd · +244 943 277 184 · info@teskbuy.com
+TEskBuy Group Ltd · +244 943 277 184 · info@teskbuy.com

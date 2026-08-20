@@ -22,6 +22,7 @@ const FINALIDADES = {
   produto: { cofre: 'publico', pasta: 'produtos', escopo: 'empresa', mimes: IMAGENS },
   logotipo: { cofre: 'publico', pasta: 'empresas', escopo: 'empresa', mimes: IMAGENS },
   loja: { cofre: 'publico', pasta: 'loja', escopo: 'equipa', mimes: IMAGENS },
+  avatar: { cofre: 'publico', pasta: 'avatares', escopo: 'utilizador', mimes: IMAGENS },
   kyc: { cofre: 'documentos', pasta: 'kyc', escopo: 'utilizador', mimes: DOCUMENTOS },
   denuncia: { cofre: 'documentos', pasta: 'denuncias', escopo: 'utilizador', mimes: DOCUMENTOS },
 };
@@ -58,7 +59,7 @@ async function autorizarCarregamento(token, utilizador, { finalidade, mime }, em
   }
 
   if (regra.escopo === 'equipa' && utilizador.papel !== 'admin' && utilizador.papel !== 'gestor') {
-    throw erros.semPermissao('Só a equipa TeskBuy pode carregar imagens da loja.');
+    throw erros.semPermissao('Só a equipa TEskBuy pode carregar imagens da loja.');
   }
   if (regra.escopo === 'empresa' && !empresaId) {
     throw erros.semPermissao('Só empresas aprovadas podem carregar estas imagens.');

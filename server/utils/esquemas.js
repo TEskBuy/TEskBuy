@@ -242,7 +242,7 @@ const novaConversa = z.object({
 /* ── ficheiros ─────────────────────────────────────────────── */
 
 const autorizacaoFicheiro = z.object({
-  finalidade: z.enum(['produto', 'logotipo', 'loja', 'kyc', 'denuncia']),
+  finalidade: z.enum(['produto', 'logotipo', 'loja', 'kyc', 'denuncia', 'avatar']),
   mime: z.string().trim().max(100),
   nome: z.string().trim().max(200).optional(),
 });

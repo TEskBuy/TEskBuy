@@ -24,7 +24,15 @@ function tratadorErros(erro, req, res, _next) {
   }
 
   if (e.estado >= 500) {
-    console.error('[TeskBuy] Erro:', { rota: `${req.method} ${req.originalUrl}`, mensagem: erro.message, stack: erro.stack });
+    console.error('[TEskBuy] Erro:', {
+      rota: `${req.method} ${req.originalUrl}`,
+      mensagem: erro.message,
+      // erros do Supabase trazem estes campos: sem eles um 500 não se investiga
+      codigo_bd: erro.code || null,
+      detalhes_bd: erro.details || null,
+      sugestao_bd: erro.hint || null,
+      stack: erro.stack,
+    });
   }
 
   res.status(e.estado).json({

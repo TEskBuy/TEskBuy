@@ -11,7 +11,7 @@ const registar = capturar(async (req, res) => {
   return criado(res, resultado, {
     mensagem: resultado.precisa_confirmar
       ? 'Conta criada. Confirme o e-mail para começar a comprar.'
-      : 'Conta criada. Bem-vindo à TeskBuy.',
+      : 'Conta criada. Bem-vindo à TEskBuy.',
   });
 });
 
@@ -73,7 +73,7 @@ const alterarPalavraPasse = capturar(async (req, res) => {
 const confirmar = capturar(async (req, res) => {
   const resultado = await auth.confirmarCodigo(req.body);
   return ok(res, resultado, {
-    mensagem: `Conta confirmada. Bem-vindo à TeskBuy, ${resultado.utilizador?.nome || ''}.`.trim(),
+    mensagem: `Conta confirmada. Bem-vindo à TEskBuy, ${resultado.utilizador?.nome || ''}.`.trim(),
   });
 });
 
@@ -89,7 +89,7 @@ const google = (req, res) => res.redirect(auth.urlGoogle(req.origemSite));
 const sessaoGoogle = capturar(async (req, res) => {
   const resultado = await auth.sessaoGoogle(req.body);
   return ok(res, resultado, {
-    mensagem: `Bem-vindo à TeskBuy, ${resultado.utilizador?.nome || ''}.`.trim(),
+    mensagem: `Bem-vindo à TEskBuy, ${resultado.utilizador?.nome || ''}.`.trim(),
   });
 });
 

@@ -82,7 +82,7 @@ async function entrar({ email, palavra_passe }) {
     .maybeSingle();
 
   if (perfil && perfil.is_active === false) {
-    throw erros.semPermissao('Esta conta está suspensa. Contacte a TeskBuy pelo +244 943 277 184.');
+    throw erros.semPermissao('Esta conta está suspensa. Contacte a TEskBuy pelo +244 943 277 184.');
   }
 
   await sessao.from('profiles').update({ last_seen_at: new Date().toISOString() }).eq('id', data.user.id);
@@ -123,7 +123,7 @@ async function sessaoGoogle({ access_token, refresh_token, expira_em }) {
     .maybeSingle();
 
   if (perfil && perfil.is_active === false) {
-    throw erros.semPermissao('Esta conta está suspensa. Contacte a TeskBuy pelo +244 943 277 184.');
+    throw erros.semPermissao('Esta conta está suspensa. Contacte a TEskBuy pelo +244 943 277 184.');
   }
 
   // Na primeira entrada o perfil vem sem nome nem foto: a Google traz ambos.
@@ -182,7 +182,7 @@ async function confirmarCodigo({ email, codigo }) {
     .maybeSingle();
 
   if (perfil && perfil.is_active === false) {
-    throw erros.semPermissao('Esta conta está suspensa. Contacte a TeskBuy pelo +244 943 277 184.');
+    throw erros.semPermissao('Esta conta está suspensa. Contacte a TEskBuy pelo +244 943 277 184.');
   }
 
   await sessao.from('profiles').update({ last_seen_at: new Date().toISOString() }).eq('id', data.user.id);
@@ -222,7 +222,7 @@ async function pedirRecuperacao(email, origem) {
   });
   // Resposta neutra: não revela se o e-mail existe.
   if (error && !String(error.message).toLowerCase().includes('rate limit')) {
-    console.warn('[TeskBuy] recuperação:', error.message);
+    console.warn('[TEskBuy] recuperação:', error.message);
   }
   return { enviado: true };
 }

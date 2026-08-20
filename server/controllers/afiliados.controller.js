@@ -25,7 +25,7 @@ const pedirParceria = capturar(async (req, res) => {
   await afiliados.exigirAfiliado(req.utilizador.id);
   const r = await afiliados.pedirParceria(req.utilizador.id, req.body);
   return criado(res, r, {
-    mensagem: 'Pedido enviado. Passa primeiro pela TeskBuy e depois pela empresa.',
+    mensagem: 'Pedido enviado. Passa primeiro pela TEskBuy e depois pela empresa.',
   });
 });
 

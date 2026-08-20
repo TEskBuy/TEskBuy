@@ -2,7 +2,7 @@
   "name": "teskbuy",
   "version": "1.0.0",
   "private": true,
-  "description": "TeskBuy — e-commerce angolano (Node.js + Express + Supabase), pronto para Vercel.",
+  "description": "TEskBuy — e-commerce angolano (Node.js + Express + Supabase), pronto para Vercel.",
   "license": "UNLICENSED",
   "type": "commonjs",
   "engines": { "node": "22.x" },

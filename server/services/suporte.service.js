@@ -62,7 +62,7 @@ function normalizaTicket(t) {
       id: m.id,
       texto: m.body,
       criada_em: m.created_at,
-      autor: m.autor?.full_name || 'TeskBuy',
+      autor: m.autor?.full_name || 'TEskBuy',
       da_equipa: m.autor?.role === 'admin' || m.autor?.role === 'gestor',
     })),
   };

@@ -1,5 +1,5 @@
 -- ============================================================
--- TeskBuy — Marketplace, Fase 1: fundações na base de dados
+-- TEskBuy — Marketplace, Fase 1: fundações na base de dados
 --
 -- Esta migração NÃO altera nada do que já existe e funciona.
 -- Só acrescenta: empresas/vendedores, afiliados, KYC, parcerias,
@@ -7,7 +7,7 @@
 -- notificações, auditoria, métodos de pagamento e preferências.
 --
 -- Os produtos actuais ficam com company_id NULL, o que significa
--- "vendido pela própria TeskBuy". Nada deixa de funcionar.
+-- "vendido pela própria TEskBuy". Nada deixa de funcionar.
 -- ============================================================
 
 -- ── tipos ───────────────────────────────────────────────────
@@ -132,7 +132,7 @@ create table if not exists public.kyc_documents (
 );
 
 -- ── produtos pertencem a uma empresa ────────────────────────
--- NULL = vendido pela própria TeskBuy (todos os produtos actuais).
+-- NULL = vendido pela própria TEskBuy (todos os produtos actuais).
 
 alter table public.products
   add column if not exists company_id uuid references public.companies(id) on delete restrict;

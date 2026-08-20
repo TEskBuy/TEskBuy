@@ -9,7 +9,7 @@ router.get('/health', capturar(async (_req, res) => {
   const inicio = Date.now();
   const { error } = await publico.from('settings').select('key').limit(1);
   return ok(res, {
-    servico: 'TeskBuy API',
+    servico: 'TEskBuy API',
     versao: '1.0.0',
     ambiente: env.nodeEnv,
     base_de_dados: error ? 'indisponivel' : 'ligada',
@@ -20,7 +20,7 @@ router.get('/health', capturar(async (_req, res) => {
 
 router.get('/', (_req, res) =>
   ok(res, {
-    servico: 'TeskBuy API',
+    servico: 'TEskBuy API',
     versao: '1.0.0',
     documentacao: '/api/health',
     recursos: [
